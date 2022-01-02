@@ -3,7 +3,7 @@
 Installation
 
 ```
-devtools:install_gitlab("waljee-zhu-ml-projects/hosea-package")
+devtools::install_git(url="https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package.git")
 ```
 
 Use
