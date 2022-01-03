@@ -1,13 +1,11 @@
 load_data = function(
   dir="R_data/",
-  demo="sample", 
-  charlson="charlson",
   y0=-5, y1=-1
 ){
   timestamp()
   
   cat("Loading data...")
-  df = readRDS(paste0(dir, sample, ".rds"))
+  df = readRDS(paste0(dir, "sample", ".rds"))
   cat("done.\n")
   timestamp()
   
@@ -34,7 +32,7 @@ load_data = function(
   timestamp()
   
   cat("Processing Charlson indicator variables...\n")
-  charlson_df = readRDS(file=paste0(dir, charlson, ".rds")) #TODO this should be a processing step
+  charlson_df = readRDS(file=paste0(dir, "charlson", ".rds")) #TODO this should be a processing step
   names(charlson_df) = charlson_vars_new() #TODO: same
   for(n in charlson_vars_old()){
     df[[n]] = charlson_df[[n]]
