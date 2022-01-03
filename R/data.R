@@ -1,3 +1,11 @@
+#' Title
+#'
+#' @param dir 
+#' @param y0 
+#' @param y1 
+#'
+#' @return
+#' @export
 load_data = function(
   dir="R_data/",
   y0=-5, y1=-1

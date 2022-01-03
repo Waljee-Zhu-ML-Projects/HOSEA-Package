@@ -7,8 +7,6 @@
 #' @export
 #' 
 #' @seealso \code{\link{sas_to_rds}}
-#'
-#' @examples
 batch_sas_to_rds = function(
   files=c(
     "sample",

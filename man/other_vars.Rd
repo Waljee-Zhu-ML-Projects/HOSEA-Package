@@ -12,3 +12,4 @@ other_vars()
 \description{
 Other clinical variable names (after transformations)
 }
+\keyword{internal}

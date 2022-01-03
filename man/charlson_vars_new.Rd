@@ -12,3 +12,4 @@ charlson_vars_new()
 \description{
 Charlson variable names in new format
 }
+\keyword{internal}

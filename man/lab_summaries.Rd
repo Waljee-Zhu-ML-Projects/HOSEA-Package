@@ -12,3 +12,4 @@ lab_summaries()
 \description{
 Lab measurement summaries names
 }
+\keyword{internal}

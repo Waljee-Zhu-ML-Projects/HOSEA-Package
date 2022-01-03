@@ -12,3 +12,4 @@ lab_types()
 \description{
 Lab measurements names
 }
+\keyword{internal}

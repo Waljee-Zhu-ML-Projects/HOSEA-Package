@@ -2,7 +2,7 @@
 #'
 #' @return
 #' @export
-#' @kerwords internal
+#' @keywords internal
 demo_vars = function(){
   vars = c(
     'ID','CaseControl',
@@ -21,7 +21,7 @@ demo_vars = function(){
 #'
 #' @return
 #' @export
-#' @kerwords internal
+#' @keywords internal
 charlson_vars_new = function(){
   vars = c(
     "ID",       "case",     "start",    "end",      "CHF",      
@@ -37,7 +37,7 @@ charlson_vars_new = function(){
 #'
 #' @return
 #' @export
-#' @kerwords internal
+#' @keywords internal
 charlson_vars_old = function(){
   vars =  c(
     "CHF",      "CTD",      "DEM",      "DIAB_C",   "GerdAtIndex",    
@@ -51,7 +51,7 @@ charlson_vars_old = function(){
 #'
 #' @return
 #' @export
-#' @kerwords internal
+#' @keywords internal
 lab_types = function(){
   vars = c('labs_a1c',
           'labs_bmp',
@@ -66,7 +66,7 @@ lab_types = function(){
 #'
 #' @return
 #' @export
-#' @kerwords internal
+#' @keywords internal
 lab_summaries = function(){
   vars = c("mean", "max", "min",
            "maxdiff", "mindiff", "tv")
@@ -78,7 +78,7 @@ lab_summaries = function(){
 #'
 #' @return
 #' @export
-#' @kerwords internal
+#' @keywords internal
 event_vars = function(){
   vars = c("colonoscopy", "labs_fobt")
   return(vars)
@@ -88,6 +88,7 @@ event_vars = function(){
 #'
 #' @return
 #' @export
+#' @keywords internal
 other_vars = function(){
   vars = c('colonoscopy_n','colonoscopy_maxdiff',
            'labs_fobt_n','labs_fobt_maxdiff',

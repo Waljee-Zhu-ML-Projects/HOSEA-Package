@@ -12,3 +12,4 @@ event_vars()
 \description{
 Event-type variables
 }
+\keyword{internal}
