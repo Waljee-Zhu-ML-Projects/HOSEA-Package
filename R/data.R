@@ -35,7 +35,7 @@ load_data = function(
   # SmokeStatus (keep current and former)
   df$smoke_current = as.integer(df$SmokeStatus==1)
   df$smoke_former = as.integer(df$SmokeStatus==2)
-  df = dyplr::select(df, -SmokeStatus)
+  df = dplyr::select(df, -SmokeStatus)
   cat("done.\n")
   timestamp()
   
