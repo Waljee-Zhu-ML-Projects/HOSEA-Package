@@ -6,11 +6,7 @@ Installation:
 - Install using `devtools`:
 
 ```r
-devtools::install_gitlab(
-  repo="waljee-zhu-ml-projects/hosea-package", 
-  host="gitlab.umich.edu",
-  auth_token="<your-personal-access-token>"
-)
+devtools::install_git(url="https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package.git")
 ```
 
 Usage
