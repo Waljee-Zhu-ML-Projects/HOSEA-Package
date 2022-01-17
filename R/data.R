@@ -6,14 +6,15 @@
 #'
 #' @return
 #' @export
-load_data = function(
-  dir="R_data/",
+create_data = function(
+  dir_in="R_data/",
+  file_out="R_data/processed_records_5-1",
   y0=-5, y1=-1
 ){
   timestamp()
   
   cat("Loading data...")
-  df = readRDS(paste0(dir, "sample", ".rds"))
+  df = read_sas(paste0(dir, "sample.sas7dbat"))
   cat("done.\n")
   timestamp()
   
@@ -26,7 +27,7 @@ load_data = function(
   timestamp()
   
   cat("Processing demo variables...")
-  df = df[, demo_vars()]
+  df = df[, HOSEA:::demo_vars()]
   # Gender
   df$Gender[df$Gender==''] = NA
   df$Gender = as.integer(df$Gender=='M')
@@ -40,7 +41,8 @@ load_data = function(
   timestamp()
   
   cat("Processing Charlson indicator variables...\n")
-  charlson_df = readRDS(file=paste0(dir, "charlson", ".rds")) #TODO this should be a processing step
+  charlson_df = create_charlson_data(paste0(dir, "alldxs"))
+  # charlson_df = readRDS(file=paste0(dir, "charlson", ".rds")) #TODO this should be a processing step
   names(charlson_df) = charlson_vars_new() #TODO: same
   for(n in charlson_vars_old()){
     df[[n]] = charlson_df[[n]]
@@ -85,6 +87,28 @@ load_data = function(
   }
   cat("...done.\n")
   timestamp()
+  
+  return(df)
+}
+
+
+create_charlson_data = function(dir="unzipped_data/", prefix="alldxs", which=HOSEA:::charlson_names()){
+  df = tibble::tibble()
+  files = list.files(dir, paste0(prefix, ".*"))
+  for(file in files){
+    cat(paste0("- ", file, " ..."))
+    src_df = read_sas(paste0(dir, file))
+    
+    for(charl in which){
+      icd9 = HOSEA:::charlson_icd(charl, "icd9")
+      icd10 = HOSEA:::charlson_icd(charl, "icd10")
+      tmp = dplyr::mutate(src_df, charl9=icd9(icd9code))
+      tmp = dplyr::mutate(tmp, charl10=ifelse(file=="alldxscx.sas7bat", 0, icd10(icd10code))) # legacy from Peter's code, why?
+      df = dplyr::bind_rows(df, tmp)
+      df = dplyr::summarize_all(dplyr::group_by(df, ID), max, na.rm=T)
+    }
+    cat("done.\n")
+  }
   
   return(df)
 }
