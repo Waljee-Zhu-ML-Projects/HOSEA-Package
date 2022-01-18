@@ -8,11 +8,7 @@ demo_vars = function(){
     'ID','CaseControl',
     'ageatindex','Gender','bmi','weight',
     'Asian','Black','HawaiianPacific','IndianAlaskan',
-    'SmokeStatus',
-    'agentorange',
-    'GerdAtIndex',
-    'CHF','CTD','DEM','DIAB_C','HIV','MLD','MSLD','PARA','RD',
-    'cd','copd','diab_nc','mi','pud','pvd'
+    'SmokeStatus','agentorange'
   )
   return(vars)
 }

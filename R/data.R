@@ -11,78 +11,67 @@ create_data = function(
   file_out="R_data/processed_records/5-1.rds",
   y0=-5, y1=-1
 ){
-  timestamp()
+        timestamp()
   
-  cat("Loading main data...")
+        cat("Loading demographic data...")
   df = read_sas(paste0(dir, "sample.sas7bdat"), "sample")
-  # drop old Charlson data
-  df %<>% select(-charlson_vars_old())
-  cat("done.\n")
-  timestamp()
+        cat("done.\n")
+        timestamp()
   
-  cat("Computing window bounds...")
+        cat("Computing window bounds...")
   master = df[,c('ID')]
   master$case = !is.na(df$datedx)
   master$start = df$IndexDate + y0 * 365 + 1
   master$end = df$IndexDate + y1 * 365 + 1
-  cat("done.\n")
-  timestamp()
+        cat("done.\n")
+        timestamp()
   
-  cat("Processing demo variables...")
+        cat("Processing demographic variables...")
   df = df[, demo_vars()]
-  # Gender
   df$Gender[df$Gender==''] = NA
   df$Gender = as.integer(df$Gender=='M')
-  # agentorange
   df$agentorange = as.integer(df$agentorange=='YES')
-  # SmokeStatus (keep current and former)
   df$smoke_current = as.integer(df$SmokeStatus==1)
   df$smoke_former = as.integer(df$SmokeStatus==2)
   df %<>% select(-SmokeStatus)
-  cat("done.\n")
-  timestamp()
+        cat("done.\n")
+        timestamp()
   
-  cat("Processing Charlson indicator variables...\n")
+        cat("Processing Charlson indicators...\n")
   charlson_df = create_charlson_data(dir, master=master)
   df %<>% left_join(charlson_df, by="ID") 
   rm(charlson_df); gc()
-  cat("...done.\n")
-  timestamp()
+        cat("...done.\n")
+        timestamp()
   
-  cat("Processing event variables...\n")
+        cat("Processing event variables...\n")
   event_df = create_event_data(dir, master=master)
   df %<>% left_join(event_df, by="ID") 
   rm(event_df); gc()
-  cat("...done.\n")
-  timestamp()
+        cat("...done.\n")
+        timestamp()
   
-  cat("Processing medication variables...")
+        cat("Processing medication variables...")
   allmeds_df = create_meds_data(dir, master=master)
   df %<>% left_join(allmeds_df, by="ID")
   rm(allmeds_df); gc()
-  cat("done.\n")
-  timestamp()
+        cat("done.\n")
+        timestamp()
   
-  cat("Processing lab variables...\n")
+        cat("Processing lab variables...\n")
   lab_df = create_lab_data(dir, master=master)
-  # for(n in lab_types()){
-  #   cat(paste0(n, "..."))
-  #   lab_df = readRDS(paste0(dir, tab, '_summary.rds')) #TODO this should be a processing step
-  #   df %<>% left_join(lab_df, by="ID")
-  #   cat("done.\n")
-  # }
   df %<>% left_join(lab_df, by="ID") 
   rm(lab_df); gc()
-  cat("...done.\n")
-  timestamp()
+        cat("...done.\n")
+        timestamp()
   
-  cat("Simple imputation for some variables...")
+        cat("Simple imputation for some variables...")
   for(n in other_vars()){
     which = is.na(tmp)
     df[which, n] = 0
   }
-  cat("...done.\n")
-  timestamp()
+        cat("...done.\n")
+        timestamp()
   
   return(df)
 }
@@ -201,7 +190,7 @@ create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=
 #' @export
 #'
 #' @examples
-create_med_data = function(dir="./unzipped_data/", which=med_vars(), master=NULL){
+create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NULL){
   dff = 0
   src_df = read_sas(paste0(dir, "allmeds.sas7bdat"), "allmeds")
   src_df %<>% filter(Med_Type %in% med_vars()) 
@@ -275,73 +264,68 @@ create_med_data = function(dir="./unzipped_data/", which=med_vars(), master=NULL
 }
 
 
-create_lab_data = function(dir="./unzipped_data/", which=lab_vars(), master=NULL){
+#' Title
+#'
+#' @param dir 
+#' @param which 
+#' @param master 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NULL){
   dff = 0
-  src_df = read_sas(paste0(dir, "allmeds.sas7bdat"), "allmeds")
-  src_df %<>% filter(Med_Type %in% med_vars()) 
-  # restrict to prediction window
-  src_df %<>% left_join(master, by="ID")
-  src_df %<>% filter((newenddate>=start)&(Filldate<=end)) # at least some overlap
-  # ensure ordered
-  src_df %<>% arrange(ID, Filldate)
   
-  for(type in which){
-    cat(paste0("- ", type, " ...\n"))
-    tmp = src_df %>% filter(Med_Type==type)
-    # clip dates to prediction window & compute lag
-    tmp %<>% mutate(
-      filldate=pmax(start,Filldate),
-      enddate=pmin(end,newenddate),
-      next_ID=lead(ID),
-      next_filldate=lead(Filldate, default=Inf)
-    )
-    tmp %<>% select(ID, filldate, enddate, next_ID, next_filldate, dd, end, start)
-    last_entry = with(tmp, ID!=next_ID)
-    tmp$next_ID[last_entry] = NA; tmp$next_filldate[last_entry] = Inf
-    cat("  clipped dates to prediction window\n")
-    # add dummy rows for gaps with 0 dose (unless it goes beyond the prediction window)
-    end_after = with(tmp, enddate<next_filldate)
-    tmp = bind_rows(
-      tmp %>% select(ID, filldate, dd),
-      tmp %>% filter(end_after) %>% 
-        mutate(dd=ifelse(enddate==end, dd, 0), filldate=enddate) %>% 
-        select(ID, filldate, dd)
-    )
-    tmp %<>% arrange(ID, filldate)
-    colnames(tmp) = c("ID", "date", "dose")
-    cat("  added dummy rows for gaps\n")
-    # compute variables
-    tmp %<>% mutate(
-      ID_next = lead(ID),
-      date_next = lead(date),
-      dose_next = lead(dose)
-    )
-    new_subject = with(tmp, ID!=ID_next)
-    tmp$ID_next[new_subject] = NA
-    tmp$date_next[new_subject] = NA
-    tmp$dose_next[new_subject] = NA
-    tmp = tmp %>% mutate(
-      ddate=pmax(1, date_next-date),
-      ddose=dose_next-dose
-    ) %>% mutate(
-      sdose=ddose/ddate,
-      pdose=dose*date
-    )
-    tmp = tmp %>% group_by(ID) %>% summarize(
-      int=safe_sum(pdose),
-      mean=safe_mean(dose),
-      max=safe_max(dose),
-      maxdiff=safe_max(sdose),
-      tv=safe_mean(abs(sdose))
-    )
-    cat("  computed variables\n")
-    colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
+  for(file in which){
+    cat(paste0("- ", file, " ...\n"))
     
-    if(dff == 0){
-      dff = tmp
-    }else{
-      dff %<>% full_join(tmp, by="ID")
+    src_df = read_sas(paste0(dir, file, ".sas7bdat"), "file", n_max=10000)
+    subtypes = tail(colnames(src_df), -2)
+    # restrict to prediction window
+    src_df %<>% left_join(master, by="ID")
+    src_df %<>% filter((labdate>=start)&(labdate<=end))
+    # ensure ordered
+    src_df %<>% arrange(ID, labdate)
+    
+    cat("\n  ")
+    for(type in subtypes){
+      cat(paste0(type, " "))
+      tmp = src_df %>% select(ID, labdate, type)
+      colnames(tmp) = c("ID", "labdate", "var")
+      # compute lag variables
+      tmp %<>% mutate(
+        ID_lag = lag(ID),
+        labdate_lag = lag(labdate),
+        var_lag = lag(var)
+      )
+      # compute diff and slope
+      tmp %<>% mutate(
+        dlabdate = pmax(1, labdate - labdate_lag),
+        dvar = var - var_lag
+      )
+      tmp %<>% mutate(
+        svar = dvar / dlabdate
+      )
+      # compute summaries
+      tmp = tmp %>% group_by(ID) %>%
+        summarize(
+          mean = safe_mean(var),
+          min = safe_min(var),
+          max = safe_max(var),
+          mindiff = safe_min(svar),
+          maxdiff = safe_max(svar),
+          tiv = safe_mean(abs(svar)),
+        )
+      colnames(tmp) = c("ID", paste(type, c("mean", "min", "max", "mindiff", "maxdiff", "tv"), sep="_"))
+      
+      if(dff == 0){
+        dff = tmp
+      }else{
+        dff %<>% full_join(tmp, by="ID")
+      }
     }
+    
     cat("  done.\n")
   }
   
