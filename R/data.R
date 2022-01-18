@@ -1,8 +1,8 @@
 #' Title
 #'
-#' @param dir 
-#' @param y0 
-#' @param y1 
+#' @param dir directory containing all files
+#' @param y0 starting year relative to index (default: -5)
+#' @param y1 ending year relative to index (default: -1)
 #'
 #' @return
 #' @export

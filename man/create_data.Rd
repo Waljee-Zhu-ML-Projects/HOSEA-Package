@@ -12,11 +12,11 @@ create_data(
 )
 }
 \arguments{
-\item{dir}{}
+\item{dir}{directory containing all files}
 
-\item{y0}{}
+\item{y0}{starting year relative to index (default: -5)}
 
-\item{y1}{}
+\item{y1}{ending year relative to index (default: -1)}
 }
 \value{
 

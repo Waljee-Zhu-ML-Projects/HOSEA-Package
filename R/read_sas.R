@@ -14,7 +14,7 @@ load_sas = function(filepath, filename, ...){
     df = readRDS(rdspath)
     cat(paste("  Loaded from RDS file: ", rdspath), fill=T)
     return(df)
-  })
+  }, silent=T)
   # otherwise, read sas and create rds file
   df = haven::read_sas(filepath, ...)
   cat(paste("  Loaded from SAS format:", filepath), fill=T)
