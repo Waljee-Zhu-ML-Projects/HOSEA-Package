@@ -27,7 +27,7 @@ create_data = function(
         timestamp()
   
         cat("Processing demographic variables...")
-  df = df[, demo_vars()]
+  df %<>% select(demo_vars())
   df$Gender[df$Gender==''] = NA
   df$Gender = as.integer(df$Gender=='M')
   df$agentorange = as.integer(df$agentorange=='YES')
@@ -111,12 +111,15 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=c
       tmp %<>% group_by(ID) %>% select(ID, charl9, charl10) %>% summarize_all(max)
       tmp %<>% summarize(ID=ID, charl=pmax(charl9, charl10))
       colnames(tmp) = c("ID", charl)
+      if(nrow(tmp)==0) next
       if(dff == 0){
         dff = tmp
       }else{
         dff %<>% full_join(tmp, by="ID")
       }
     }
+    
+    if(nrow(dff)==0) next
     if(df == 0){
       df = dff
     }else{
@@ -166,6 +169,7 @@ create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=
       maxdiff=safe_max(sdate)
     )
     colnames(tmp) = c("ID", paste(file, c("n", "maxdiff"), sep="_"))
+    if(nrow(tmp)==0) next
     if(dff == 0){
       dff = tmp
     }else{
@@ -252,6 +256,7 @@ create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NUL
     cat("  computed variables\n")
     colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
     
+    if(nrow(tmp)==0) next
     if(dff == 0){
       dff = tmp
     }else{
@@ -319,6 +324,7 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
         )
       colnames(tmp) = c("ID", paste(type, c("mean", "min", "max", "mindiff", "maxdiff", "tv"), sep="_"))
       
+      if(nrow(tmp)==0) next
       if(dff == 0){
         dff = tmp
       }else{

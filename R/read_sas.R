@@ -1,25 +1,3 @@
-batch_read_sas = function(
-  path_in="unzipped_data/", 
-  format_in=".sas7dbat",
-  files=c(
-    "sample",
-    "colonoscopy",
-    # "allmeds", 
-    "labs_a1c",
-    "labs_bmp",
-    "labs_cbc",
-    "labs_crp",
-    # "labs_fobt",
-    "labs_lft",
-    "labs_lipid",
-  )
-){
-  out = lapply(files, function(file) read_sas(paste0(path_in, file, format_in)))
-  return(out)
-}
-
-
-
 #' Title
 #'
 #' @param filepath 
