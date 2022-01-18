@@ -4,7 +4,7 @@ batch_read_sas = function(
   files=c(
     "sample",
     "colonoscopy",
-    # "allmeds",
+    # "allmeds", 
     "labs_a1c",
     "labs_bmp",
     "labs_cbc",
@@ -20,9 +20,19 @@ batch_read_sas = function(
 
 
 
-read_sas = function(filepath){
-  df = haven::read_sas(filepath)
-  cat(paste("Successfully imported", filepath), fill=T)
+#' Title
+#'
+#' @param filepath 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' 
+#' @importFrom haven read_sas
+read_sas = function(filepath, filename, ...){
+  df = haven::read_sas(filepath, ...)
+  cat(paste("  Successfully imported", filepath), fill=T)
   df = switch(filename,
               sample=arrange(df, ID, NA),
               colonoscopy=arrange(df, ID, Procdate),

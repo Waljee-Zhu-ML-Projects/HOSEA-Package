@@ -95,6 +95,17 @@ event_vars = function(){
   return(vars)
 }
 
+
+#' Med variables
+#'
+#' @return
+#' @export
+#' @keywords internal
+med_vars = function(){
+  vars = c("H2R", "PPI")
+  return(vars)
+}
+
 #' Other clinical variable names (after transformations)
 #'
 #' @return
@@ -478,6 +489,6 @@ charlson_icd = function(charl, icd="icd9"){
     },
     'icd10'=function(s){
       as.integer(pmax(substr(s,1,5)=='K22.2'))
-    }),
+    })
   )[[charl]][[icd]])
 }

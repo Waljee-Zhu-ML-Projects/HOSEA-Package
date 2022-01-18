@@ -7,14 +7,16 @@
 #' @return
 #' @export
 create_data = function(
-  dir_in="R_data/",
-  file_out="R_data/processed_records_5-1",
+  dir="unzipped_data/",
+  file_out="R_data/processed_records/5-1.rds",
   y0=-5, y1=-1
 ){
   timestamp()
   
-  cat("Loading data...")
-  df = read_sas(paste0(dir, "sample.sas7dbat"))
+  cat("Loading main data...")
+  df = read_sas(paste0(dir, "sample.sas7bdat"), "sample")
+  # drop old Charlson data
+  df %<>% select(-charlson_vars_old())
   cat("done.\n")
   timestamp()
   
@@ -27,7 +29,7 @@ create_data = function(
   timestamp()
   
   cat("Processing demo variables...")
-  df = df[, HOSEA:::demo_vars()]
+  df = df[, demo_vars()]
   # Gender
   df$Gender[df$Gender==''] = NA
   df$Gender = as.integer(df$Gender=='M')
@@ -36,46 +38,40 @@ create_data = function(
   # SmokeStatus (keep current and former)
   df$smoke_current = as.integer(df$SmokeStatus==1)
   df$smoke_former = as.integer(df$SmokeStatus==2)
-  df = dplyr::select(df, -SmokeStatus)
+  df %<>% select(-SmokeStatus)
   cat("done.\n")
   timestamp()
   
   cat("Processing Charlson indicator variables...\n")
-  charlson_df = create_charlson_data(paste0(dir, "alldxs"))
-  # charlson_df = readRDS(file=paste0(dir, "charlson", ".rds")) #TODO this should be a processing step
-  names(charlson_df) = charlson_vars_new() #TODO: same
-  for(n in charlson_vars_old()){
-    df[[n]] = charlson_df[[n]]
-  }
+  charlson_df = create_charlson_data(dir, master=master)
+  df %<>% left_join(charlson_df, by="ID") 
   rm(charlson_df); gc()
   cat("...done.\n")
   timestamp()
   
   cat("Processing event variables...\n")
-  for(n in event_vars()){
-    cat(paste0(n, "..."))
-    event_df = readRDS(paste0(dir, tab, '_summary.rds')) #TODO this should be a processing step
-    df = dplyr::left_join(df, event_df, by="ID")
-    cat("done.\n")
-  }
+  event_df = create_event_data(dir, master=master)
+  df %<>% left_join(event_df, by="ID") 
   rm(event_df); gc()
   cat("...done.\n")
   timestamp()
   
   cat("Processing medication variables...")
-  allmeds_df = readRDS(paste0(dir, "allmeds_summary.rds")) #TODO this should be a processing step
-  df = dplyr::left_join(df, allmeds_df, by="ID")
+  allmeds_df = create_meds_data(dir, master=master)
+  df %<>% left_join(allmeds_df, by="ID")
   rm(allmeds_df); gc()
   cat("done.\n")
   timestamp()
   
   cat("Processing lab variables...\n")
-  for(n in lab_types()){
-    cat(paste0(n, "..."))
-    lab_df = readRDS(paste0(dir, tab, '_summary.rds')) #TODO this should be a processing step
-    df = dplyr::left_join(df, lab_df, by="ID")
-    cat("done.\n")
-  }
+  lab_df = create_lab_data(dir, master=master)
+  # for(n in lab_types()){
+  #   cat(paste0(n, "..."))
+  #   lab_df = readRDS(paste0(dir, tab, '_summary.rds')) #TODO this should be a processing step
+  #   df %<>% left_join(lab_df, by="ID")
+  #   cat("done.\n")
+  # }
+  df %<>% left_join(lab_df, by="ID") 
   rm(lab_df); gc()
   cat("...done.\n")
   timestamp()
@@ -92,23 +88,262 @@ create_data = function(
 }
 
 
-create_charlson_data = function(dir="unzipped_data/", prefix="alldxs", which=HOSEA:::charlson_names()){
-  df = tibble::tibble()
+#' Title
+#'
+#' @param dir 
+#' @param prefix 
+#' @param which 
+#' @param master 
+#'
+#' @return a tibble with columns (ID, *which); with 0/1 entries depending whether 
+#' there was an ICD 9/10 code (see charlson_names()) during the prediction 
+#' interval (given by master)
+#' @export
+#'
+#' @examples
+create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=charlson_names(), master=NULL){
+  df = 0
   files = list.files(dir, paste0(prefix, ".*"))
   for(file in files){
-    cat(paste0("- ", file, " ..."))
-    src_df = read_sas(paste0(dir, file))
+    cat(paste0("- ", file, " ...\n"))
+    src_df = read_sas(paste0(dir, file), strsplit(file, "\\.")[[1]][1])
+    # restrict to prediction window
+    src_df %<>% left_join(master, by="ID")
+    src_df %<>% filter((Dxdate>=start)&(Dxdate<=end))
     
+    dff = 0
+    cat("  ")
     for(charl in which){
-      icd9 = HOSEA:::charlson_icd(charl, "icd9")
-      icd10 = HOSEA:::charlson_icd(charl, "icd10")
-      tmp = dplyr::mutate(src_df, charl9=icd9(icd9code))
-      tmp = dplyr::mutate(tmp, charl10=ifelse(file=="alldxscx.sas7bat", 0, icd10(icd10code))) # legacy from Peter's code, why?
-      df = dplyr::bind_rows(df, tmp)
-      df = dplyr::summarize_all(dplyr::group_by(df, ID), max, na.rm=T)
+      cat(paste0(charl, " "))
+      icd9 = charlson_icd(charl, "icd9")
+      icd10 = charlson_icd(charl, "icd10")
+      tmp = src_df %>% mutate(charl9=icd9(icd9code))
+      tmp %<>% mutate(charl10=ifelse(file=="alldxscx.sas7bdat", 0, icd10(icd10code))) # legacy from Peter's code, why?
+      tmp %<>% group_by(ID) %>% select(ID, charl9, charl10) %>% summarize_all(max)
+      tmp %<>% summarize(ID=ID, charl=pmax(charl9, charl10))
+      colnames(tmp) = c("ID", charl)
+      if(dff == 0){
+        dff = tmp
+      }else{
+        dff %<>% full_join(tmp, by="ID")
+      }
     }
-    cat("done.\n")
+    if(df == 0){
+      df = dff
+    }else{
+      df %<>% bind_rows(dff) %>% group_by(ID) %>% summarize_all(max)
+    }
+    cat("\n  ...done.\n")
   }
   
   return(df)
+}
+
+
+
+
+#' Title
+#'
+#' @param dir 
+#' @param which 
+#' @param master 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=NULL){
+  dff = 0
+  
+  for(file in which){
+    cat(paste0("- ", file, " ...\n"))
+    src_df = read_sas(paste0(dir, file, ".sas7bdat"), file)
+    # restrict to prediction window
+    src_df %<>% left_join(master, by="ID")
+    cols = colnames(src_df); cols[2] = "date"; colnames(src_df) = cols
+    src_df %<>% filter((date>=start)&(date<=end))
+    # ensure ordered
+    src_df %<>% arrange(ID, date)
+    # lagged variables
+    src_df %<>% mutate(ID_lag = lag(ID), date_lag=lag(date))
+    new_subject = with(src_df, ID!=ID_lag)
+    src_df$ID_lag[new_subject] = NA; src_df$date_lag[new_subject] = NA
+    # difference and slope
+    src_df = src_df %>% 
+      mutate(ddate=ifelse(date-date_lag==0, NA, date-date_lag)) %>% 
+      mutate(sdate=1/ddate)
+    tmp = src_df %>% group_by(ID) %>% summarize(
+      n=n(),
+      maxdiff=safe_max(sdate)
+    )
+    colnames(tmp) = c("ID", paste(file, c("n", "maxdiff"), sep="_"))
+    if(dff == 0){
+      dff = tmp
+    }else{
+      dff %<>% full_join(tmp, by="ID")
+    }
+    cat("  done.\n")
+  }
+  
+  return(dff)
+}
+
+
+
+
+#' Title
+#'
+#' @param dir 
+#' @param which 
+#' @param master 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+create_med_data = function(dir="./unzipped_data/", which=med_vars(), master=NULL){
+  dff = 0
+  src_df = read_sas(paste0(dir, "allmeds.sas7bdat"), "allmeds")
+  src_df %<>% filter(Med_Type %in% med_vars()) 
+  # restrict to prediction window
+  src_df %<>% left_join(master, by="ID")
+  src_df %<>% filter((newenddate>=start)&(Filldate<=end)) # at least some overlap
+  # ensure ordered
+  src_df %<>% arrange(ID, Filldate)
+  
+  for(type in which){
+    cat(paste0("- ", type, " ...\n"))
+    tmp = src_df %>% filter(Med_Type==type)
+    # clip dates to prediction window & compute lag
+    tmp %<>% mutate(
+      filldate=pmax(start,Filldate),
+      enddate=pmin(end,newenddate),
+      next_ID=lead(ID),
+      next_filldate=lead(Filldate, default=Inf)
+    )
+    tmp %<>% select(ID, filldate, enddate, next_ID, next_filldate, dd, end, start)
+    last_entry = with(tmp, ID!=next_ID)
+    tmp$next_ID[last_entry] = NA; tmp$next_filldate[last_entry] = Inf
+    cat("  clipped dates to prediction window\n")
+    # add dummy rows for gaps with 0 dose (unless it goes beyond the prediction window)
+    end_after = with(tmp, enddate<next_filldate)
+    tmp = bind_rows(
+      tmp %>% select(ID, filldate, dd),
+      tmp %>% filter(end_after) %>% 
+        mutate(dd=ifelse(enddate==end, dd, 0), filldate=enddate) %>% 
+        select(ID, filldate, dd)
+    )
+    tmp %<>% arrange(ID, filldate)
+    colnames(tmp) = c("ID", "date", "dose")
+    cat("  added dummy rows for gaps\n")
+    # compute variables
+    tmp %<>% mutate(
+      ID_next = lead(ID),
+      date_next = lead(date),
+      dose_next = lead(dose)
+    )
+    new_subject = with(tmp, ID!=ID_next)
+    tmp$ID_next[new_subject] = NA
+    tmp$date_next[new_subject] = NA
+    tmp$dose_next[new_subject] = NA
+    tmp = tmp %>% mutate(
+      ddate=pmax(1, date_next-date),
+      ddose=dose_next-dose
+    ) %>% mutate(
+      sdose=ddose/ddate,
+      pdose=dose*date
+    )
+    tmp = tmp %>% group_by(ID) %>% summarize(
+      int=safe_sum(pdose),
+      mean=safe_mean(dose),
+      max=safe_max(dose),
+      maxdiff=safe_max(sdose),
+      tv=safe_mean(abs(sdose))
+    )
+    cat("  computed variables\n")
+    colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
+    
+    if(dff == 0){
+      dff = tmp
+    }else{
+      dff %<>% full_join(tmp, by="ID")
+    }
+    cat("  done.\n")
+  }
+  
+  return(dff)
+}
+
+
+create_lab_data = function(dir="./unzipped_data/", which=lab_vars(), master=NULL){
+  dff = 0
+  src_df = read_sas(paste0(dir, "allmeds.sas7bdat"), "allmeds")
+  src_df %<>% filter(Med_Type %in% med_vars()) 
+  # restrict to prediction window
+  src_df %<>% left_join(master, by="ID")
+  src_df %<>% filter((newenddate>=start)&(Filldate<=end)) # at least some overlap
+  # ensure ordered
+  src_df %<>% arrange(ID, Filldate)
+  
+  for(type in which){
+    cat(paste0("- ", type, " ...\n"))
+    tmp = src_df %>% filter(Med_Type==type)
+    # clip dates to prediction window & compute lag
+    tmp %<>% mutate(
+      filldate=pmax(start,Filldate),
+      enddate=pmin(end,newenddate),
+      next_ID=lead(ID),
+      next_filldate=lead(Filldate, default=Inf)
+    )
+    tmp %<>% select(ID, filldate, enddate, next_ID, next_filldate, dd, end, start)
+    last_entry = with(tmp, ID!=next_ID)
+    tmp$next_ID[last_entry] = NA; tmp$next_filldate[last_entry] = Inf
+    cat("  clipped dates to prediction window\n")
+    # add dummy rows for gaps with 0 dose (unless it goes beyond the prediction window)
+    end_after = with(tmp, enddate<next_filldate)
+    tmp = bind_rows(
+      tmp %>% select(ID, filldate, dd),
+      tmp %>% filter(end_after) %>% 
+        mutate(dd=ifelse(enddate==end, dd, 0), filldate=enddate) %>% 
+        select(ID, filldate, dd)
+    )
+    tmp %<>% arrange(ID, filldate)
+    colnames(tmp) = c("ID", "date", "dose")
+    cat("  added dummy rows for gaps\n")
+    # compute variables
+    tmp %<>% mutate(
+      ID_next = lead(ID),
+      date_next = lead(date),
+      dose_next = lead(dose)
+    )
+    new_subject = with(tmp, ID!=ID_next)
+    tmp$ID_next[new_subject] = NA
+    tmp$date_next[new_subject] = NA
+    tmp$dose_next[new_subject] = NA
+    tmp = tmp %>% mutate(
+      ddate=pmax(1, date_next-date),
+      ddose=dose_next-dose
+    ) %>% mutate(
+      sdose=ddose/ddate,
+      pdose=dose*date
+    )
+    tmp = tmp %>% group_by(ID) %>% summarize(
+      int=safe_sum(pdose),
+      mean=safe_mean(dose),
+      max=safe_max(dose),
+      maxdiff=safe_max(sdose),
+      tv=safe_mean(abs(sdose))
+    )
+    cat("  computed variables\n")
+    colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
+    
+    if(dff == 0){
+      dff = tmp
+    }else{
+      dff %<>% full_join(tmp, by="ID")
+    }
+    cat("  done.\n")
+  }
+  
+  return(dff)
 }
