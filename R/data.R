@@ -6,15 +6,17 @@
 #'
 #' @return
 #' @export
+#' @import dplyr magrittr
 create_data = function(
   dir="unzipped_data/",
   file_out="R_data/processed_records/5-1.rds",
   y0=-5, y1=-1
 ){
+        cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", y0, " to ", "y1", "\n"))
         timestamp()
   
         cat("Loading demographic data...")
-  df = read_sas(paste0(dir, "sample.sas7bdat"), "sample")
+  df = load_sas(paste0(dir, "sample.sas7bdat"), "sample")
         cat("done.\n")
         timestamp()
   
@@ -88,19 +90,21 @@ create_data = function(
 #' there was an ICD 9/10 code (see charlson_names()) during the prediction 
 #' interval (given by master)
 #' @export
+#' @import dplyr magrittr
+#' @importFrom purrr reduce
 #'
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=charlson_names(), master=NULL){
-  df = 0
+  out_df = list()
   files = list.files(dir, paste0(prefix, ".*"))
   for(file in files){
     cat(paste0("- ", file, " ...\n"))
-    src_df = read_sas(paste0(dir, file), strsplit(file, "\\.")[[1]][1])
+    src_df = load_sas(paste0(dir, file), strsplit(file, "\\.")[[1]][1])
     # restrict to prediction window
     src_df %<>% left_join(master, by="ID")
     src_df %<>% filter((Dxdate>=start)&(Dxdate<=end))
     
-    dff = 0
+    dfs = list()
     cat("  ")
     for(charl in which){
       cat(paste0(charl, " "))
@@ -111,24 +115,14 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=c
       tmp %<>% group_by(ID) %>% select(ID, charl9, charl10) %>% summarize_all(max)
       tmp %<>% summarize(ID=ID, charl=pmax(charl9, charl10))
       colnames(tmp) = c("ID", charl)
-      if(nrow(tmp)==0) next
-      if(dff == 0){
-        dff = tmp
-      }else{
-        dff %<>% full_join(tmp, by="ID")
-      }
+      dfs[[charl]] = tmp
     }
-    
-    if(nrow(dff)==0) next
-    if(df == 0){
-      df = dff
-    }else{
-      df %<>% bind_rows(dff) %>% group_by(ID) %>% summarize_all(max)
-    }
+    dff = dfs %>% purrr::reduce(full_join, by='ID')
+    out_df[[file]] = dff %>% group_by(ID) %>% summarize_all(max)
     cat("\n  ...done.\n")
   }
-  
-  return(df)
+  out_df %<>% purrr::reduce(full_join, by='ID')
+  return(out_df)
 }
 
 
@@ -142,14 +136,15 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=c
 #'
 #' @return
 #' @export
+#' @import dplyr magrittr
+#' @importFrom purrr reduce
 #'
 #' @examples
 create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=NULL){
-  dff = 0
-  
+  dfs = list()
   for(file in which){
     cat(paste0("- ", file, " ...\n"))
-    src_df = read_sas(paste0(dir, file, ".sas7bdat"), file)
+    src_df = load_sas(paste0(dir, file, ".sas7bdat"), file)
     # restrict to prediction window
     src_df %<>% left_join(master, by="ID")
     cols = colnames(src_df); cols[2] = "date"; colnames(src_df) = cols
@@ -169,15 +164,10 @@ create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=
       maxdiff=safe_max(sdate)
     )
     colnames(tmp) = c("ID", paste(file, c("n", "maxdiff"), sep="_"))
-    if(nrow(tmp)==0) next
-    if(dff == 0){
-      dff = tmp
-    }else{
-      dff %<>% full_join(tmp, by="ID")
-    }
+    dfs[[file]] = tmp
     cat("  done.\n")
   }
-  
+  dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)
 }
 
@@ -192,11 +182,13 @@ create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=
 #'
 #' @return
 #' @export
+#' @import dplyr magrittr
+#' @importFrom purrr reduce
 #'
 #' @examples
 create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NULL){
-  dff = 0
-  src_df = read_sas(paste0(dir, "allmeds.sas7bdat"), "allmeds")
+  dfs = list()
+  src_df = load_sas(paste0(dir, "allmeds.sas7bdat"), "allmeds")
   src_df %<>% filter(Med_Type %in% med_vars()) 
   # restrict to prediction window
   src_df %<>% left_join(master, by="ID")
@@ -255,16 +247,10 @@ create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NUL
     )
     cat("  computed variables\n")
     colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
-    
-    if(nrow(tmp)==0) next
-    if(dff == 0){
-      dff = tmp
-    }else{
-      dff %<>% full_join(tmp, by="ID")
-    }
+    dfs[[type]] = tmp
     cat("  done.\n")
   }
-  
+  dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)
 }
 
@@ -277,15 +263,17 @@ create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NUL
 #'
 #' @return
 #' @export
+#' @import dplyr magrittr
+#' @importFrom purrr reduce
 #'
 #' @examples
 create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NULL){
-  dff = 0
+  dfs = list()
   
   for(file in which){
     cat(paste0("- ", file, " ...\n"))
     
-    src_df = read_sas(paste0(dir, file, ".sas7bdat"), "file", n_max=10000)
+    src_df = load_sas(paste0(dir, file, ".sas7bdat"), "file")
     subtypes = tail(colnames(src_df), -2)
     # restrict to prediction window
     src_df %<>% left_join(master, by="ID")
@@ -293,7 +281,7 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
     # ensure ordered
     src_df %<>% arrange(ID, labdate)
     
-    cat("\n  ")
+    cat("  ")
     for(type in subtypes){
       cat(paste0(type, " "))
       tmp = src_df %>% select(ID, labdate, type)
@@ -324,16 +312,10 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
         )
       colnames(tmp) = c("ID", paste(type, c("mean", "min", "max", "mindiff", "maxdiff", "tv"), sep="_"))
       
-      if(nrow(tmp)==0) next
-      if(dff == 0){
-        dff = tmp
-      }else{
-        dff %<>% full_join(tmp, by="ID")
-      }
+      dfs[[file]] = tmp
     }
-    
     cat("  done.\n")
   }
-  
+  dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)
 }

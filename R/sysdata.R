@@ -1,7 +1,6 @@
 #' Demographic variable names
 #'
 #' @return
-#' @export
 #' @keywords internal
 demo_vars = function(){
   vars = c(
@@ -16,7 +15,6 @@ demo_vars = function(){
 #' Charlson variable names in new format
 #'
 #' @return
-#' @export
 #' @keywords internal
 charlson_vars_new = function(){
   vars = c(
@@ -32,7 +30,6 @@ charlson_vars_new = function(){
 #' Charlson variable names in old format
 #'
 #' @return
-#' @export
 #' @keywords internal
 charlson_vars_old = function(){
   vars =  c(
@@ -57,7 +54,6 @@ charlson_names = function(){
 #' Lab measurements names
 #'
 #' @return
-#' @export
 #' @keywords internal
 lab_types = function(){
   vars = c('labs_a1c',
@@ -72,7 +68,6 @@ lab_types = function(){
 #' Lab measurement summaries names
 #'
 #' @return
-#' @export
 #' @keywords internal
 lab_summaries = function(){
   vars = c("mean", "max", "min",
@@ -84,7 +79,6 @@ lab_summaries = function(){
 #' Event-type variables
 #'
 #' @return
-#' @export
 #' @keywords internal
 event_vars = function(){
   vars = c("colonoscopy", "labs_fobt")
@@ -95,7 +89,6 @@ event_vars = function(){
 #' Med variables
 #'
 #' @return
-#' @export
 #' @keywords internal
 med_vars = function(){
   vars = c("H2R", "PPI")
@@ -105,7 +98,6 @@ med_vars = function(){
 #' Other clinical variable names (after transformations)
 #'
 #' @return
-#' @export
 #' @keywords internal
 other_vars = function(){
   vars = c('colonoscopy_n','colonoscopy_maxdiff',
@@ -117,6 +109,10 @@ other_vars = function(){
 
 
 
+#' ICD dictionary
+#'
+#' @return
+#' @keywords internal
 charlson_icd = function(charl, icd="icd9"){
   return(list(
   'chf'=list(

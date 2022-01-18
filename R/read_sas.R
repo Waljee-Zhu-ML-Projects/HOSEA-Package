@@ -4,13 +4,20 @@
 #'
 #' @return
 #' @export
-#'
-#' @examples
-#' 
+#' @import dplyr
 #' @importFrom haven read_sas
-read_sas = function(filepath, filename, ...){
+#' @importFrom stringr str_replace_all
+load_sas = function(filepath, filename, ...){
+  rdspath = stringr::str_replace_all(filepath, "sas7bdat", "rds")
+  # first check if in rds format, which is much faster to load
+  try({
+    df = readRDS(rdspath)
+    cat(paste("  Loaded from RDS file: ", rdspath), fill=T)
+    return(df)
+  })
+  # otherwise, read sas and create rds file
   df = haven::read_sas(filepath, ...)
-  cat(paste("  Successfully imported", filepath), fill=T)
+  cat(paste("  Loaded from SAS format:", filepath), fill=T)
   df = switch(filename,
               sample=arrange(df, ID, NA),
               colonoscopy=arrange(df, ID, Procdate),
@@ -24,5 +31,7 @@ read_sas = function(filepath, filename, ...){
               allmeds=arrange(df, ID, Filldate),
               df # no match
   )
+  saveRDS(df, rdspath)
+  cat(paste("  Saved to RDS format:", rdspath), fill=T)
   return(df)
 }
