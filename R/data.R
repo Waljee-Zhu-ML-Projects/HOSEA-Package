@@ -10,7 +10,6 @@
 #' @import dplyr magrittr
 load_process_data = function(
   dir="unzipped_data/",
-  file_out="R_data/processed_records/5-1.rds",
   start=-5, end=-1
 ){
         cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", start, " to ", end, "\n"))
@@ -122,8 +121,8 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=c
     out_df[[file]] = dff %>% group_by(ID) %>% summarize_all(max)
     cat("\n  ...done.\n")
   }
-  out_df %<>% purrr::reduce(full_join, by='ID')
-  return(out_df)
+  out = bind_rows(out_df) %>% group_by(ID) %>% summarize_all(max)
+  return(out)
 }
 
 
