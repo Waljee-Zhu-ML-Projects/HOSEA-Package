@@ -97,7 +97,7 @@ load_process_data = function(
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=charlson_names(), master=NULL){
   out_df = list()
-  files = list.files(dir, paste0(prefix, ".*"))
+  files = unique(list.files(dir, paste0(prefix, ".*")))
   for(file in files){
     cat(paste0("- ", file, " ...\n"))
     src_df = load_sas(paste0(dir, file), strsplit(file, "\\.")[[1]][1])
@@ -247,7 +247,7 @@ create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NUL
       tv=safe_mean(abs(sdose))
     )
     cat("  computed variables\n")
-    colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
+    colnames(tmp) = c("ID", paste(tolower(type), c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
     dfs[[type]] = tmp
     cat("  ...done.\n")
   }
