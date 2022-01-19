@@ -305,10 +305,10 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
       tmp = tmp %>% group_by(ID) %>%
         summarize(
           mean = safe_mean(var),
-          min = safe_min(var),
           max = safe_max(var),
-          mindiff = safe_min(svar),
+          min = safe_min(var),
           maxdiff = safe_max(svar),
+          mindiff = safe_min(svar),
           tiv = safe_mean(abs(svar)),
         )
       colnames(tmp) = c("ID", paste(type, c("mean", "min", "max", "mindiff", "maxdiff", "tv"), sep="_"))

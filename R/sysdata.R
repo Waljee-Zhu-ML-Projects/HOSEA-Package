@@ -43,8 +43,8 @@ charlson_vars_old = function(){
 # identifies which are included
 charlson_names = function(){
   vars =  c(
-    "chf",      "ctd",      "dem",      "diab_c",   "gerd",    
-    "hiv",      "mld",      "msld",     "para",     "rd",       
+    "GerdAtIndex",     "CHF",      "CTD",      "DEM",      "DIAB_C",      
+    "HIV",      "MLD",      "MSLD",     "PARA",     "RD",       
     "cd",       "copd",     "diab_nc",  "mi",       "pud",      
     "pvd"
   )
@@ -200,7 +200,7 @@ charlson_icd = function(charl, icd="icd9"){
     'icd10'=function(s){
       as.integer(substr(s,1,5) %in% paste0('E1',apply(expand.grid(c(0:4),c(2:5,7)),1,paste0,collapse='.')))
     }),
-  'gerd'=list(
+  'GerdAtIndex'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='530.11',
                       substr(s,1,6)=='530.81'))
