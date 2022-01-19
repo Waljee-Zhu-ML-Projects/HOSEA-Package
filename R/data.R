@@ -97,7 +97,7 @@ load_process_data = function(
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=charlson_names(), master=NULL){
   out_df = list()
-  files = unique(list.files(dir, paste0(prefix, ".*")))
+  files = unique(sapply(list.files(dir, paste0(prefix, ".*")), function(str) sub("\\..*", "", str)))
   for(file in files){
     cat(paste0("- ", file, " ...\n"))
     src_df = load_sas(paste0(dir, file), strsplit(file, "\\.")[[1]][1])
