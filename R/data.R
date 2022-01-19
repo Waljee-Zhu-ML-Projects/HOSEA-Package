@@ -100,7 +100,7 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", which=c
   files = unique(sapply(list.files(dir, paste0(prefix, ".*")), function(str) sub("\\..*", "", str)))
   for(file in files){
     cat(paste0("- ", file, " ...\n"))
-    src_df = load_sas(paste0(dir, file), strsplit(file, "\\.")[[1]][1])
+    src_df = load_sas(paste0(dir, file, ".sas7bdat"), file)
     # restrict to prediction window
     src_df %<>% left_join(master, by="ID")
     src_df %<>% filter((Dxdate>=start)&(Dxdate<=end))
