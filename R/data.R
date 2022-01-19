@@ -1,6 +1,7 @@
 #' Title
 #'
 #' @param dir directory containing all files
+#' @param file_out not used
 #' @param start starting year relative to index (default: -5)
 #' @param end ending year relative to index (default: -1)
 #'
@@ -69,7 +70,7 @@ load_process_data = function(
   
         cat("Simple imputation for some variables...")
   for(n in other_vars()){
-    which = is.na(tmp)
+    which = is.na(df[, n])
     df[which, n] = 0
   }
         cat("...done.\n")
@@ -165,7 +166,7 @@ create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=
     )
     colnames(tmp) = c("ID", paste(file, c("n", "maxdiff"), sep="_"))
     dfs[[file]] = tmp
-    cat("  done.\n")
+    cat("  ...done.\n")
   }
   dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)
@@ -248,7 +249,7 @@ create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NUL
     cat("  computed variables\n")
     colnames(tmp) = c("ID", paste(type, c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
     dfs[[type]] = tmp
-    cat("  done.\n")
+    cat("  ...done.\n")
   }
   dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)
@@ -314,7 +315,7 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
       
       dfs[[file]] = tmp
     }
-    cat("  done.\n")
+    cat("\n  ...done.\n")
   }
   dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)

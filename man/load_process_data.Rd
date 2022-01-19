@@ -14,6 +14,8 @@ load_process_data(
 \arguments{
 \item{dir}{directory containing all files}
 
+\item{file_out}{not used}
+
 \item{start}{starting year relative to index (default: -5)}
 
 \item{end}{ending year relative to index (default: -1)}
