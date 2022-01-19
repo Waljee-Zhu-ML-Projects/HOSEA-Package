@@ -115,7 +115,15 @@ other_vars = function(){
 #' @keywords internal
 charlson_icd = function(charl, icd="icd9"){
   return(list(
-  'chf'=list(
+  'GerdAtIndex'=list(
+    'icd9'=function(s){
+      as.integer(pmax(substr(s,1,6)=='530.11',
+                      substr(s,1,6)=='530.81'))
+    },
+    'icd10'=function(s){
+      as.integer(substr(s,1,3)=='K21')
+    }),
+  'CHF'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='398.91',
                       substr(s,1,6)=='402.01',
@@ -150,7 +158,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='I42.8',
                       substr(s,1,5)=='I42.9'))
     }),
-  'ctd'=list(
+  'CTD'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='446.5',
                       substr(s,1,5)=='710.0',
@@ -175,7 +183,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='M33',
                       substr(s,1,3)=='M34'))
     }),
-  'dem'=list(
+  'DEM'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,4)=='290.',
                       substr(s,1,5)=='294.1',
@@ -190,7 +198,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='G30',
                       substr(s,1,5)=='G31.1'))
     }),
-  'diab_c'=list(
+  'DIAB_C'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='250.4',
                       substr(s,1,5)=='250.5',
@@ -200,15 +208,7 @@ charlson_icd = function(charl, icd="icd9"){
     'icd10'=function(s){
       as.integer(substr(s,1,5) %in% paste0('E1',apply(expand.grid(c(0:4),c(2:5,7)),1,paste0,collapse='.')))
     }),
-  'GerdAtIndex'=list(
-    'icd9'=function(s){
-      as.integer(pmax(substr(s,1,6)=='530.11',
-                      substr(s,1,6)=='530.81'))
-    },
-    'icd10'=function(s){
-      as.integer(substr(s,1,3)=='K21')
-    }),
-  'hiv'=list(
+  'HIV'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,4)=='042.',
                       substr(s,1,4)=='043.',
@@ -220,7 +220,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='B22',
                       substr(s,1,3)=='B24'))
     }),
-  'mld'=list(
+  'MLD'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='070.22',
                       substr(s,1,6)=='070.23',
@@ -259,7 +259,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='K76.3',
                       substr(s,1,5)=='K76.4'))
     }),
-  'msld'=list(
+  'MSLD'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='456.0',
                       substr(s,1,5)=='456.1',
@@ -282,7 +282,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='K76.6',
                       substr(s,1,5)=='K76.7'))
     }),
-  'para'=list(
+  'PARA'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='334.1',
                       substr(s,1,4)=='342.',
@@ -310,7 +310,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='G83.4',
                       substr(s,1,5)=='G83.9'))
     }),
-  'rd'=list(
+  'RD'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='403.01',
                       substr(s,1,6)=='403.11',
