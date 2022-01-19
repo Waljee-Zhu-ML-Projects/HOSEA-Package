@@ -1,18 +1,18 @@
 #' Title
 #'
 #' @param dir directory containing all files
-#' @param y0 starting year relative to index (default: -5)
-#' @param y1 ending year relative to index (default: -1)
+#' @param start starting year relative to index (default: -5)
+#' @param end ending year relative to index (default: -1)
 #'
 #' @return
 #' @export
 #' @import dplyr magrittr
-create_data = function(
+load_process_data = function(
   dir="unzipped_data/",
   file_out="R_data/processed_records/5-1.rds",
-  y0=-5, y1=-1
+  start=-5, end=-1
 ){
-        cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", y0, " to ", "y1", "\n"))
+        cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", start, " to ", end, "\n"))
         timestamp()
   
         cat("Loading demographic data...")
@@ -23,8 +23,8 @@ create_data = function(
         cat("Computing window bounds...")
   master = df[,c('ID')]
   master$case = !is.na(df$datedx)
-  master$start = df$IndexDate + y0 * 365 + 1
-  master$end = df$IndexDate + y1 * 365 + 1
+  master$start = df$IndexDate + start * 365 + 1
+  master$end = df$IndexDate + end * 365 + 1
         cat("done.\n")
         timestamp()
   
