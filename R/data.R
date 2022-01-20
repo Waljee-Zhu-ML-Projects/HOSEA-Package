@@ -312,7 +312,7 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
         )
       colnames(tmp) = c("ID", paste(type, c("mean", "min", "max", "mindiff", "maxdiff", "tv"), sep="_"))
       
-      dfs[[file]] = tmp
+      dfs[[paste(file, type)]] = tmp
     }
     cat("\n  ...done.\n")
   }
