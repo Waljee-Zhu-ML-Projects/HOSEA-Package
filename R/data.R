@@ -236,7 +236,7 @@ create_meds_data = function(dir="./unzipped_data/", which=med_vars(), master=NUL
       ddose=dose_next-dose
     ) %>% mutate(
       sdose=ddose/ddate,
-      pdose=dose*date
+      pdose=dose*ddate
     )
     tmp = tmp %>% group_by(ID) %>% summarize(
       int=safe_sum(pdose),
