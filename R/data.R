@@ -319,3 +319,50 @@ create_lab_data = function(dir="./unzipped_data/", which=lab_types(), master=NUL
   dff = dfs %>% purrr::reduce(full_join, by="ID")
   return(dff)
 }
+
+
+
+#' Title
+#'
+#' @param df 
+#' @param dir 
+#' @param which 
+#'
+#' @return
+#' @export
+#' @import dplyr magrittr
+#'
+#' @examples
+patch_outcome = function(df, dir="./unzipped_data/", which="any"){
+  if(which == "any"){ # do nothing, CaseControl already contains both types
+    return(df)
+  }else{
+    stopifnot(which %in% c("EAC", "EDJAC"))
+    file = "cancertype"
+    src_df = load_sas(paste0(dir, file, ".sas7bdat"), file) 
+    src_df %<>% filter(CancerType==which)
+    df %<>% mutate(!!which := ifelse(ID %in% src_df$ID, 1, 0))
+    return(df)
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

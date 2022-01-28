@@ -29,7 +29,7 @@ load_sas = function(filepath, filename, ...){
               labs_lft=arrange(df, ID, labdate),
               labs_lipid=arrange(df, ID, labdate),
               allmeds=arrange(df, ID, Filldate),
-              df # no match
+              df # no match, e.e.g cancertype
   )
   saveRDS(df, rdspath)
   cat(paste("  Saved to RDS format:", rdspath), fill=T)

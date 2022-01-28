@@ -4,21 +4,16 @@
 \alias{load_process_data}
 \title{Title}
 \usage{
-load_process_data(
-  dir = "unzipped_data/",
-  file_out = "R_data/processed_records/5-1.rds",
-  start = -5,
-  end = -1
-)
+load_process_data(dir = "unzipped_data/", start = -5, end = -1)
 }
 \arguments{
 \item{dir}{directory containing all files}
 
-\item{file_out}{not used}
-
 \item{start}{starting year relative to index (default: -5)}
 
 \item{end}{ending year relative to index (default: -1)}
+
+\item{file_out}{not used}
 }
 \value{
 
