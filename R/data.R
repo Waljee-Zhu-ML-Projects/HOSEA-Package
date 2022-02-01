@@ -10,7 +10,7 @@
 #' @import dplyr magrittr
 load_process_data = function(
   dir="unzipped_data/",
-  start=-5, end=-1, icd10=F
+  start=-5, end=-1, icd10=F, icd10startdate=17229-3*365
 ){
         cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", start, " to ", end, "\n"))
         timestamp()
@@ -25,12 +25,13 @@ load_process_data = function(
   master$case = !is.na(df$datedx)
   master$start = df$IndexDate + start * 365 + 1
   master$end = df$IndexDate + end * 365 + 1
+  if(icd10) master$start = pmax(master$start, icd10startdate)
         cat("done.\n")
         timestamp()
         
         cat("Processing Charlson indicators...\n")
-  out = create_charlson_data(dir, master=master, icd10=icd10)
-  if(icd10) master = out$master
+  out = create_charlson_data(dir, master=master)
+  master = out$master
   charlson_df = out$df
   df %<>% left_join(charlson_df, by="ID") 
   rm(charlson_df, out); gc()
@@ -86,8 +87,6 @@ load_process_data = function(
 #' @param prefix 
 #' @param which 
 #' @param master 
-#' @param icd10 
-#' @param icd10startdate 
 #'
 #' @return a tibble with columns (ID, *which); with 0/1 entries depending whether 
 #' there was an ICD 9/10 code (see charlson_names()) during the prediction 
@@ -98,14 +97,8 @@ load_process_data = function(
 #'
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", 
-                                which=charlson_names(), master=NULL, icd10=F,
-                                icd10startdate=17229-3*365){
+                                which=charlson_names(), master=NULL){
 
-  if(icd10){
-    master$start = pmax(master$start, icd10startdate)
-    master$newstart = master$end
-    master$mindate = NA
-  } 
   out_df = list()
   files = unique(sapply(list.files(dir, paste0(prefix, ".*")), function(str) sub("\\..*", "", str)))
   for(file in files){
@@ -114,15 +107,6 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
     # restrict to prediction window
     src_df %<>% left_join(master, by="ID")
     src_df %<>% filter((Dxdate>=start)&(Dxdate<=end))
-    # patch for icd10 only
-    if(icd10) {
-      # src_df %<>% filter(icd10code!="*Unknown at this time*")
-      tmp = src_df %>% group_by(ID) %>% summarize(mindate=min(Dxdate))
-      master = master %>% left_join(tmp, by="ID") %>% 
-        mutate(mindate=pmin(mindate.x, mindate.y, na.rm=T)) %>%
-        select(-c(mindate.x, mindate.y))
-      master %<>% mutate(newstart=pmin(newstart, mindate, na.rm=T))
-    }
     
     dfs = list()
     cat("  ")
@@ -142,10 +126,6 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
     cat("\n  ...done.\n")
   }
   out = bind_rows(out_df) %>% group_by(ID) %>% summarize_all(max)
-  if(icd10){  
-    master %<>% mutate(start=newstart) 
-    master %<>% select(-c(mindate, newstart))
-  }
   return(list(df=out, master=master))
 }
 
