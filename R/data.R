@@ -103,7 +103,7 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
 
   if(icd10){
     master$start = pmax(master$start, icd10startdate)
-    master$min = master$end
+    master$newstart = master$end
     master$mindate = NA
   } 
   out_df = list()
@@ -121,7 +121,7 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
       master = master %>% left_join(tmp, by="ID") %>% 
         mutate(mindate=pmin(mindate.x, mindate.y, na.rm=T)) %>%
         select(-c(mindate.x, mindate.y))
-      master %<>% mutate(min=pmin(min, mindate, na.rm=T))
+      master %<>% mutate(newstart=pmin(newstart, mindate, na.rm=T))
     }
     
     dfs = list()
@@ -143,8 +143,8 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
   }
   out = bind_rows(out_df) %>% group_by(ID) %>% summarize_all(max)
   if(icd10){  
-    master %<>% mutate(start=min) 
-    master %<>% select(-c(mindate, min))
+    master %<>% mutate(start=newstart) 
+    master %<>% select(-c(mindate, newstart))
   }
   return(list(df=out, master=master))
 }
