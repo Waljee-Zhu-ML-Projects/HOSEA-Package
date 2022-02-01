@@ -97,9 +97,12 @@ load_process_data = function(
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", 
                                 which=charlson_names(), master=NULL, icd10=F,
-                                icd10finaldate=17229){
+                                icd10finaldate=17229-3*365){
 
-  if(icd10) master$min = master$end
+  if(icd10){
+    master$start = pmax(master$start, icd10finaldate)
+    master$min = master$end
+  } 
   out_df = list()
   files = unique(sapply(list.files(dir, paste0(prefix, ".*")), function(str) sub("\\..*", "", str)))
   for(file in files){
@@ -120,10 +123,10 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
     cat("  ")
     for(charl in which){
       cat(paste0(charl, " "))
-      icd9 = charlson_icd(charl, "icd9")
-      icd10 = charlson_icd(charl, "icd10")
-      tmp = src_df %>% mutate(charl9=icd9(icd9code))
-      tmp %<>% mutate(charl10=ifelse(file=="alldxscx.sas7bdat", 0, icd10(icd10code))) # legacy from Peter's code, why?
+      icd9codes = charlson_icd(charl, "icd9")
+      icd10codes = charlson_icd(charl, "icd10")
+      tmp = src_df %>% mutate(charl9=icd9codes(icd9code))
+      tmp %<>% mutate(charl10=ifelse(file=="alldxscx.sas7bdat", 0, icd10codes(icd10code))) # legacy from Peter's code, why?
       tmp %<>% group_by(ID) %>% select(ID, charl9, charl10) %>% summarize_all(max)
       tmp %<>% summarize(ID=ID, charl=pmax(charl9, charl10))
       colnames(tmp) = c("ID", charl)
