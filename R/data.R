@@ -33,7 +33,7 @@ load_process_data = function(
   if(icd10) master = out$master
   charlson_df = out$df
   df %<>% left_join(charlson_df, by="ID") 
-  rm(charlson_df); gc()
+  rm(charlson_df, out); gc()
         cat("...done.\n")
         timestamp()
   
@@ -96,7 +96,9 @@ load_process_data = function(
 #'
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", 
-                                which=charlson_names(), master=NULL, icd10=F){
+                                which=charlson_names(), master=NULL, icd10=F,
+                                icd10finaldate=17229){
+
   if(icd10) master$min = master$end
   out_df = list()
   files = unique(sapply(list.files(dir, paste0(prefix, ".*")), function(str) sub("\\..*", "", str)))
@@ -111,7 +113,7 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
       src_df %<>% filter(icd10code!="*Unknown at this time*")
       mindate = src_df %>% group_by(ID) %>% summarize(mindate=min(Dxdate))
       master %<>% left_join(mindate, by="ID")
-      master %<>% mutate(start=pmin(start, mindate, na.rm=T))
+      master %<>% mutate(min=pmin(start, mindate, na.rm=T))
     }
     
     dfs = list()
@@ -132,7 +134,10 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
     cat("\n  ...done.\n")
   }
   out = bind_rows(out_df) %>% group_by(ID) %>% summarize_all(max)
-  master %<>% select(-mindate)
+  if(icd10){  
+    master %<>% mutate(start=min) 
+    master %<>% select(-c(mindate, min))
+  }
   return(list(df=out, master=master))
 }
 
