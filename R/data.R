@@ -116,7 +116,7 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
     src_df %<>% filter((Dxdate>=start)&(Dxdate<=end))
     # patch for icd10 only
     if(icd10) {
-      src_df %<>% filter(icd10code!="*Unknown at this time*")
+      # src_df %<>% filter(icd10code!="*Unknown at this time*")
       tmp = src_df %>% group_by(ID) %>% summarize(mindate=min(Dxdate))
       master = master %>% left_join(tmp, by="ID") %>% 
         mutate(mindate=pmin(mindate.x, mindate.y, na.rm=T)) %>%
