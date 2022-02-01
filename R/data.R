@@ -86,6 +86,8 @@ load_process_data = function(
 #' @param prefix 
 #' @param which 
 #' @param master 
+#' @param icd10 
+#' @param icd10startdate 
 #'
 #' @return a tibble with columns (ID, *which); with 0/1 entries depending whether 
 #' there was an ICD 9/10 code (see charlson_names()) during the prediction 
@@ -97,11 +99,12 @@ load_process_data = function(
 #' @examples
 create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs", 
                                 which=charlson_names(), master=NULL, icd10=F,
-                                icd10finaldate=17229-3*365){
+                                icd10startdate=17229-3*365){
 
   if(icd10){
-    master$start = pmax(master$start, icd10finaldate)
+    master$start = pmax(master$start, icd10startdate)
     master$min = master$end
+    master$mindate = NA
   } 
   out_df = list()
   files = unique(sapply(list.files(dir, paste0(prefix, ".*")), function(str) sub("\\..*", "", str)))
@@ -114,9 +117,11 @@ create_charlson_data = function(dir="./unzipped_data/", prefix="alldxs",
     # patch for icd10 only
     if(icd10) {
       src_df %<>% filter(icd10code!="*Unknown at this time*")
-      mindate = src_df %>% group_by(ID) %>% summarize(mindate=min(Dxdate))
-      master %<>% left_join(mindate, by="ID")
-      master %<>% mutate(min=pmin(start, mindate, na.rm=T))
+      tmp = src_df %>% group_by(ID) %>% summarize(mindate=min(Dxdate))
+      master = master %>% left_join(tmp, by="ID") %>% 
+        mutate(mindate=pmin(mindate.x, mindate.y, na.rm=T)) %>%
+        select(-c(mindate.x, mindate.y))
+      master %<>% mutate(min=pmin(min, mindate, na.rm=T))
     }
     
     dfs = list()
