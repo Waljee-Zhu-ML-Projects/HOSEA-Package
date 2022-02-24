@@ -8,8 +8,7 @@ create_charlson_data(
   dir = "./unzipped_data/",
   prefix = "alldxs",
   which = charlson_names(),
-  master = NULL,
-  icd10 = F
+  master = NULL
 )
 }
 \arguments{

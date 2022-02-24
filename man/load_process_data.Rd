@@ -4,7 +4,13 @@
 \alias{load_process_data}
 \title{Title}
 \usage{
-load_process_data(dir = "unzipped_data/", start = -5, end = -1, icd10 = F)
+load_process_data(
+  dir = "unzipped_data/",
+  start = -5,
+  end = -1,
+  icd10 = F,
+  icd10startdate = 17229 - 3 * 365
+)
 }
 \arguments{
 \item{dir}{directory containing all files}
