@@ -18,7 +18,7 @@ load_sas = function(filepath, filename, ...){
   # otherwise, read sas and create rds file
   df = haven::read_sas(filepath, ...)
   cat(paste("  Loaded from SAS format:", filepath), fill=T)
-  # path ID names
+  # path column names
   try(df%<>%rename(ID=id_V2))
   df = switch(filename,
               sample=arrange(df, ID, NA),

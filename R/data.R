@@ -29,6 +29,18 @@ load_process_data = function(
         cat("done.\n")
         timestamp()
         
+        cat("Processing demographic variables...")
+    try(df%<>%rename(bmi=BMI))
+    df %<>% select(demo_vars())
+    df$Gender[df$Gender==''] = NA
+    df$Gender = as.integer(df$Gender=='M')
+    df$agentorange = as.integer(df$agentorange=='YES')
+    df$smoke_current = as.integer(df$SmokeStatus==1)
+    df$smoke_former = as.integer(df$SmokeStatus==2)
+    df %<>% select(-SmokeStatus)
+        cat("done.\n")
+        timestamp()
+        
         cat("Processing Charlson indicators...\n")
   out = create_charlson_data(dir, master=master)
   master = out$master
@@ -36,17 +48,6 @@ load_process_data = function(
   df %<>% left_join(charlson_df, by="ID") 
   rm(charlson_df, out); gc()
         cat("...done.\n")
-        timestamp()
-  
-        cat("Processing demographic variables...")
-  df %<>% select(demo_vars())
-  df$Gender[df$Gender==''] = NA
-  df$Gender = as.integer(df$Gender=='M')
-  df$agentorange = as.integer(df$agentorange=='YES')
-  df$smoke_current = as.integer(df$SmokeStatus==1)
-  df$smoke_former = as.integer(df$SmokeStatus==2)
-  df %<>% select(-SmokeStatus)
-        cat("done.\n")
         timestamp()
   
         cat("Processing event variables...\n")
