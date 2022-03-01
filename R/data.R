@@ -14,9 +14,17 @@ load_process_data = function(
 ){
         cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", start, " to ", end, "\n"))
         timestamp()
-  
+        
         cat("Loading demographic data...")
   df = load_sas(paste0(dir, "sample.sas7bdat"), "sample")
+        cat("done.\n")
+        timestamp()
+        
+        cat("Removing repeated IDs...")
+  repeated = table(df$ID)
+  repeated = names(repeated)[repeated>1]
+  df %<>% filter(!((ID %in% repeated) & (CaseControl==0))) 
+  # removes all control rows with repeated IDs
         cat("done.\n")
         timestamp()
   
