@@ -15,23 +15,13 @@ load_process_data = function(
         cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", start, " to ", end, "\n"))
         timestamp()
         
-        cat("Loading demographic data...")
+        cat("Loading sample data...")
   df = load_sas(paste0(dir, "sample.sas7bdat"), "sample")
         cat("done.\n")
         timestamp()
-        
-        cat("Removing repeated IDs...")
-  repeated = table(df$ID)
-  print(table(repeated))
-  repeated = names(repeated)[repeated>1]
-  df %<>% filter(!((ID %in% repeated) & (CaseControl==0))) 
-  print(table(table(df$ID)))
-  # removes all control rows with repeated IDs
-        cat("done.\n")
-        timestamp()
   
-        cat("Computing window bounds...")
-  master = df[,c('ID')]
+        cat("Computing master table (window, type, etc.)...")
+  master = df %>% select(one_of(c("ID", "CaseControl", "CancerType", "stagegroupclinical", "StageTumor")))
   master$case = !is.na(df$datedx)
   master$start = df$IndexDate + start * 365 + 1
   master$end = df$IndexDate + end * 365 + 1
