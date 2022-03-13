@@ -10,7 +10,7 @@
 #' @import dplyr magrittr
 load_process_data = function(
   dir="unzipped_data/",
-  start=-5, end=-1, icd10=F, icd10startdate=17229-3*365
+  start=-5, end=-1, icd10=F, icd9=F, icd10startdate=17229-3*365, icd9enddate=17229-3*365-3*31
 ){
         cat(paste0("CREATING DATA FROM ", dir, " WITH YEARS ", start, " to ", end, "\n"))
         timestamp()
@@ -22,12 +22,31 @@ load_process_data = function(
   
         cat("Computing master table (window, type, etc.)...")
   master = df %>% select(one_of(c("ID", "CaseControl", "CancerType", "stagegroupclinical", "StageTumor")))
-  master$case = !is.na(df$datedx)
+  # master$case = !is.na(df$datedx)
   master$start = df$IndexDate + start * 365 + 1
   master$end = df$IndexDate + end * 365 + 1
-  if(icd10) master$start = pmax(master$start, icd10startdate)
         cat("done.\n")
         timestamp()
+        
+        
+        
+        cat("ICD 9/10?...")
+  if(icd9 & icd10) stop("only one of icd9 or icd10 can be TRUE")
+  if(icd10) {
+    master$start = pmax(master$start, icd10startdate)
+    to_keep = master$start < master$end
+    df %<>% filter(to_keep)
+    master %<>% filter(to_keep)
+  }
+  if(icd9) {
+    master$end = pmin(master$end, icd9enddate)
+    to_keep = master$start < master$end
+    df %<>% filter(to_keep)
+    master %<>% filter(to_keep)
+  }
+        cat("done.\n")
+        timestamp()
+        
         
         cat("Processing demographic variables...")
     try(df%<>%rename(bmi=BMI))
