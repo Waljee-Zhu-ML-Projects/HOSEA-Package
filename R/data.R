@@ -34,13 +34,13 @@ load_process_data = function(
   if(icd9 & icd10) stop("only one of icd9 or icd10 can be TRUE")
   if(icd10) {
     master$start = pmax(master$start, icd10startdate)
-    to_keep = master$start < master$end
+    to_keep = master$start + 365 < master$end
     df %<>% filter(to_keep)
     master %<>% filter(to_keep)
   }
   if(icd9) {
     master$end = pmin(master$end, icd9enddate)
-    to_keep = master$start < master$end
+    to_keep = master$start +365 < master$end
     df %<>% filter(to_keep)
     master %<>% filter(to_keep)
   }
