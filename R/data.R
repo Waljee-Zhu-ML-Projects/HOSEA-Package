@@ -49,7 +49,13 @@ load_process_data = function(
         
         
         cat("Processing demographic variables...")
-    try(df%<>%rename(bmi=BMI))
+        try(df%<>%rename(Gender=gender))
+        try(df%<>%rename(bmi=BMI))
+        try(df%<>%rename(Asian=asian))
+        try(df%<>%rename(Black=black))
+        try(df%<>%rename(HawaiianPacific=hawaiianpacific))
+        try(df%<>%rename(IndianAlaskan=indianalaskan))
+        try(df%<>%rename(SmokeStatus=smokestatus))
     df %<>% select(demo_vars())
     df$Gender[df$Gender==''] = NA
     df$Gender = as.integer(df$Gender=='M')
