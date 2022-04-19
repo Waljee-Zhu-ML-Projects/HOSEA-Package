@@ -6,8 +6,13 @@
 \usage{
 charlson_icd(charl, icd = "icd9")
 }
-\value{
+\arguments{
+\item{charl}{}
 
+\item{icd}{which icd code ("icd9" or "icd10")}
+}
+\value{
+a function which maps a code to a 0/1 indicator if that code corresponds to the outcome charl
 }
 \description{
 ICD dictionary

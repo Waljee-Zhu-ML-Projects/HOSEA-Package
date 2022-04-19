@@ -1,0 +1,12 @@
+```
+lab_files = c(
+  'labs_a1c.sas7bdat',
+  'labs_bmp.sas7bdat',
+  'labs_cbc.sas7bdat',
+  'labs_crp.sas7bdat',
+  'labs_lft.sas7bdat',
+  'labs_lipid.sas7bdat'
+)
+
+
+```

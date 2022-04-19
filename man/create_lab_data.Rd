@@ -4,7 +4,13 @@
 \alias{create_lab_data}
 \title{Title}
 \usage{
-create_lab_data(dir = "./unzipped_data/", which = lab_types(), master = NULL)
+create_lab_data(
+  dir = "./unzipped_data/",
+  files = c("alllabs.sas7bdat"),
+  which = lab_vars,
+  master = NULL,
+  verbose = T
+)
 }
 \arguments{
 \item{dir}{}

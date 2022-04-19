@@ -6,24 +6,25 @@
 \usage{
 create_charlson_data(
   dir = "./unzipped_data/",
-  prefix = "alldxs",
-  which = charlson_names(),
-  master = NULL
+  files = c("alldxs.sas7bdat"),
+  which = charlson_vars,
+  master = NULL,
+  verbose = T
 )
 }
 \arguments{
 \item{dir}{}
 
-\item{prefix}{}
+\item{files}{}
 
 \item{which}{}
 
 \item{master}{}
+
+\item{verbose}{}
 }
 \value{
-a tibble with columns (ID, *which); with 0/1 entries depending whether
-there was an ICD 9/10 code (see charlson_names()) during the prediction
-interval (given by master)
+
 }
 \description{
 Title

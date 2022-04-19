@@ -6,20 +6,38 @@
 \usage{
 load_process_data(
   dir = "unzipped_data/",
-  start = -5,
-  end = -1,
-  icd10 = F,
-  icd10startdate = 17229 - 3 * 365
+  files_sample = c("sample.sas7bdat"),
+  files_charlson = c("alldxs.sas7bdat"),
+  files_labs = c("alllabs.sas7bdat"),
+  files_meds = c("allmeds.sas7bdat"),
+  start = -4,
+  end = 0,
+  verbose = 2,
+  icd = "any",
+  icd10startdate = 17229,
+  icd9enddate = 17229 - 3 * 31
 )
 }
 \arguments{
 \item{dir}{directory containing all files}
 
+\item{files_sample}{}
+
+\item{files_charlson}{}
+
+\item{files_labs}{}
+
+\item{files_meds}{}
+
 \item{start}{starting year relative to index (default: -5)}
 
 \item{end}{ending year relative to index (default: -1)}
 
-\item{file_out}{not used}
+\item{verbose}{0 = none, 1 = some, 2 = most, 3=all}
+
+\item{icd10startdate}{}
+
+\item{icd9enddate}{}
 }
 \value{
 

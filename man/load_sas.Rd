@@ -2,16 +2,20 @@
 % Please edit documentation in R/read_sas.R
 \name{load_sas}
 \alias{load_sas}
-\title{Title}
+\title{Load sas files into R}
 \usage{
-load_sas(filepath, filename, ...)
+load_sas(filepath, filename, verbose = T, ...)
 }
 \arguments{
 \item{filepath}{}
+
+\item{filename}{}
+
+\item{...}{further arguments to pass to haven::read_sas}
 }
 \value{
 
 }
 \description{
-Title
+Load sas files into R
 }

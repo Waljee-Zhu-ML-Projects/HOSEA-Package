@@ -2,120 +2,68 @@
 #'
 #' @return
 #' @keywords internal
-demo_vars = function(){
-  vars = c(
-    'ID','CaseControl',
-    'ageatindex','Gender','bmi','weight',
-    'Asian','Black','HawaiianPacific','IndianAlaskan',
-    'SmokeStatus','agentorange'
-  )
-  return(vars)
-}
+demo_vars = c(
+  'ageatindex','gender','bmi','weight',
+  'asian','black','hawaiianpacific','indianalaskan',
+  'smokestatus','agentorange'
+)
+
 
 #' Charlson variable names in new format
 #'
 #' @return
 #' @keywords internal
-charlson_vars_new = function(){
-  vars = c(
-    "ID",       "case",     "start",    "end",      "CHF",      
-    "CTD",      "DEM",      "DIAB_C",   "GerdAtIndex",    
-    "HIV",      "MLD",      "MSLD",     "PARA",     "RD",       
-    "cd",       "copd",     "diab_nc",  "mi",      
-    "pud",      "pvd",      "n_visits"
-  )
-  return(vars)
-}
+charlson_vars = c(
+  "gerd",     "chf",      "ctd",      "dem",      "diab_c",      
+  "hiv",      "mld",      "msld",     "para",     "rd",       
+  "cd",       "copd",     "diab_nc",  "mi",       "pud",      
+  "pvd"
+)
 
-#' Charlson variable names in old format
+
+#' Lab variables to keep
 #'
 #' @return
 #' @keywords internal
-charlson_vars_old = function(){
-  vars =  c(
-    "CHF",      "CTD",      "DEM",      "DIAB_C",   "GerdAtIndex",    
-    "HIV",      "MLD",      "MSLD",     "PARA",     "RD",       
-    "cd",       "copd",     "diab_nc",  "mi",       "pud",      "pvd"
-  )
-  return(vars)
-}
-
-# identifies which are included
-charlson_names = function(){
-  vars =  c(
-    "GerdAtIndex",     "CHF",      "CTD",      "DEM",      "DIAB_C",      
-    "HIV",      "MLD",      "MSLD",     "PARA",     "RD",       
-    "cd",       "copd",     "diab_nc",  "mi",       "pud",      
-    "pvd"
-  )
-  return(vars)
-}
-
-#' Lab measurements names
-#'
-#' @return
-#' @keywords internal
-lab_types = function(){
-  vars = c('labs_a1c',
-          'labs_bmp',
-          'labs_cbc',
-          'labs_crp',
-          'labs_lft',
-          'labs_lipid')
-  return(vars)
-}
+lab_vars = c(
+  "a1c", "bun", "calc", "chlor", "co2", "creat",
+  "gluc", "k", "na", "baso", "eos", "hct", "lymph",
+  "mch", "mchc", "mcv", "mono", "mpv", "neut",
+  "platelet", "rbw", "wbc", "crp", "alkphos", 
+  "alt", "ast", "totprot", "hdl", "trig"
+)
 
 #' Lab measurement summaries names
 #'
 #' @return
 #' @keywords internal
-lab_summaries = function(){
-  vars = c("mean", "max", "min",
-           "maxdiff", "mindiff", "tv")
-  return(vars)
-}
-
-
-#' Event-type variables
-#'
-#' @return
-#' @keywords internal
-event_vars = function(){
-  vars = c("colonoscopy", "labs_fobt")
-  return(vars)
-}
+lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
 
 
 #' Med variables
 #'
 #' @return
 #' @keywords internal
-med_vars = function(){
-  vars = c("H2R", "PPI")
-  return(vars)
-}
+med_vars = c("h2r", "ppi")
 
-#' Other clinical variable names (after transformations)
+
+#' Med summaries
 #'
 #' @return
 #' @keywords internal
-other_vars = function(){
-  vars = c('colonoscopy_n','colonoscopy_maxdiff',
-           'labs_fobt_n','labs_fobt_maxdiff',
-           'h2r_int','h2r_mean','h2r_max','h2r_maxdiff','h2r_tv',
-           'ppi_int','ppi_mean','ppi_max','ppi_maxdiff','ppi_tv')
-  return(vars)
-}
-
+med_summaries = c("int", "mean", "max", "maxdiff", "mindiff")
 
 
 #' ICD dictionary
 #'
-#' @return
+#' @param charl 
+#' @param icd which icd code ("icd9" or "icd10")
+#'
+#' @return a function which maps a code to a 0/1 indicator if that code corresponds to the outcome charl
 #' @keywords internal
 charlson_icd = function(charl, icd="icd9"){
   return(list(
-  'GerdAtIndex'=list(
+  'gerd'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='530.11',
                       substr(s,1,6)=='530.81'))
@@ -123,7 +71,7 @@ charlson_icd = function(charl, icd="icd9"){
     'icd10'=function(s){
       as.integer(substr(s,1,3)=='K21')
     }),
-  'CHF'=list(
+  'chf'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='398.91',
                       substr(s,1,6)=='402.01',
@@ -158,7 +106,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='I42.8',
                       substr(s,1,5)=='I42.9'))
     }),
-  'CTD'=list(
+  'ctd'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='446.5',
                       substr(s,1,5)=='710.0',
@@ -183,7 +131,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='M33',
                       substr(s,1,3)=='M34'))
     }),
-  'DEM'=list(
+  'dem'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,4)=='290.',
                       substr(s,1,5)=='294.1',
@@ -198,7 +146,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='G30',
                       substr(s,1,5)=='G31.1'))
     }),
-  'DIAB_C'=list(
+  'diab_c'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='250.4',
                       substr(s,1,5)=='250.5',
@@ -208,7 +156,7 @@ charlson_icd = function(charl, icd="icd9"){
     'icd10'=function(s){
       as.integer(substr(s,1,5) %in% paste0('E1',apply(expand.grid(c(0:4),c(2:5,7)),1,paste0,collapse='.')))
     }),
-  'HIV'=list(
+  'hiv'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,4)=='042.',
                       substr(s,1,4)=='043.',
@@ -220,7 +168,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='B22',
                       substr(s,1,3)=='B24'))
     }),
-  'MLD'=list(
+  'mld'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='070.22',
                       substr(s,1,6)=='070.23',
@@ -259,7 +207,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='K76.3',
                       substr(s,1,5)=='K76.4'))
     }),
-  'MSLD'=list(
+  'msld'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='456.0',
                       substr(s,1,5)=='456.1',
@@ -282,7 +230,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='K76.6',
                       substr(s,1,5)=='K76.7'))
     }),
-  'PARA'=list(
+  'para'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,5)=='334.1',
                       substr(s,1,4)=='342.',
@@ -310,7 +258,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='G83.4',
                       substr(s,1,5)=='G83.9'))
     }),
-  'RD'=list(
+  'rd'=list(
     'icd9'=function(s){
       as.integer(pmax(substr(s,1,6)=='403.01',
                       substr(s,1,6)=='403.11',
