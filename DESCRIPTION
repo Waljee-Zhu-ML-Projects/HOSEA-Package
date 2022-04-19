@@ -1,9 +1,9 @@
 Package: HOSEA
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9001
+Title: Harnessing Opportunities to Screen for Esophageal Adenocarcinoma
+Version: 0.0.0.9002
 Authors@R: 
     person("Simon", "Fontaine", email="simfont@umich.edu", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: This packages processes raw data from EHR into the appropriate format for risk prediction from a XGBoost model.
 License: file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

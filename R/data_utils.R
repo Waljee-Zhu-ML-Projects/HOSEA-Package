@@ -1,10 +1,3 @@
-
-#' Title
-#'
-#' @param x 
-#'
-#' @return
-#' @keywords internal
 safe_mean <- function(x){
   if(all(is.na(x))){
     NA
@@ -14,12 +7,6 @@ safe_mean <- function(x){
   }
 }
 
-#' Title
-#'
-#' @param x 
-#'
-#' @return
-#' @keywords internal
 safe_max <- function(x){
   if(all(is.na(x))){
     NA
@@ -29,12 +16,6 @@ safe_max <- function(x){
   }
 }
 
-#' Title
-#'
-#' @param x 
-#'
-#' @return
-#' @keywords internal
 safe_min <- function(x){
   if(all(is.na(x))){
     NA
@@ -44,12 +25,6 @@ safe_min <- function(x){
   }
 }
 
-#' Title
-#'
-#' @param x 
-#'
-#' @return
-#' @keywords internal
 safe_sum <- function(x){
   if(all(is.na(x))){
     NA

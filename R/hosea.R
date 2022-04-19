@@ -1,6 +1,6 @@
 #' HOSEA Package
 #'
-#' A longer description would go here.
+#' Harnessing Opportunities to Screen for Esophageal Adenocarcinoma
 #'
 #'
 #' @docType package

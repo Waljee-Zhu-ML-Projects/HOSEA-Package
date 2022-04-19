@@ -1,8 +1,10 @@
 # HOSEA Package
 
-Installation:
+## Installation
 
-- Create a PAT on Gitlab with sufficient access (I put "api, read_user, read_api, read_repository, write_repository")
+### Using `devtools`
+
+- Create a PAT on Gitlab with sufficient access (I think "read_repository" should be sufficient for use.)
 - Install using `devtools`:
 
 ```r
@@ -10,30 +12,53 @@ devtools::install_git(url="https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea
 library(HOSEA)
 ```
 
-Import and process data 
+### Alternative
+
+I had trouble installing it directly through `devtools` so I did it manually:
+
+- Clone the repository `https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package.git`
+- Move to the new directory
+- Install the package `R CMD INSTALL .`
+
+## Data processing
+
+The first function to use is `load_process_data` which will load raw data and proces it into
+the appropriate format for prediction
 
 ```r
-df = load_process_data(dir="dirname/", start=-5, end=-1)
+out = load_process_data(
+  dir="unzipped_data/",
+  files_sample=c("sample.sas7bdat"),
+  files_charlson=c("alldxs.sas7bdat"),
+  files_labs=c("alllabs.sas7bdat"),
+  files_meds=c("allmeds.sas7bdat"),
+  start=-4, end=0, 
+  verbose=3
+)
 ```
 
-which requires `dirname` to contain the following `.sas7bdat` files
+A few remarks:
 
-- `alldxs???` containing ICD codes (may have multiple files as long as they all start by `alldxs`)
-- `allmeds` containing relevant prescriptions
-- `colonoscopy` containing  colonoscopy events
-- `labs_???` containing lab results for `???` being all of `a1c`, `bmp`, `cbc`, `crp`, `fobt`, `lft`, `lipid`
-- `sample` containing demographic information as well as diagnosis at index
+- `dir` is the path to the directory containing all relevant files
+- `files_X` contains list of files for the specific type of information
+- `start` and `end` specifies the window during which to compute summaries for labs, medications and comorbidities
+- `verbose` specifies the amount of logging pushed to the console (0-3)
+- `out` is a list with entries `df` which is the dataframe for prediction and `master` which contains some metadata
 
-and where `start`, `end` define the window of data used for prediction where 0 correspond to index (so `start` and `end` should be negative with default `start=-5` and `end=-1`.)
+## Risk prediction
 
-The resulting data frame has the following structure
+To obtain risk prediction, we first need an XGBoost model from which we extract the imputation data and the model itself:
 
-- `ID`: unique subject identifier
-- `CaseControl`: the diagnosis at index
-- 11 Demographic variables (age, sex, race:4, smoking status:2, BMI, weight, agent orange exposure)
-- 16 Charlson and GERD indicators (chf, ctd, dem, diab_c, gerd, hiv, mld, msld, para, rd, cd, copd, diab_nc, mi, pud, pvd)
-- 2x2=4 event variables (types: colonoscopy, fobt; summaries: n, maxdiff)
-- 2x5=10 medication variables (types: H2R, PPI; summaries: total, mean, max, maxdiff, tv)
-- 33x6=198 lab data (types: A1c bun calc chlor co2 creat gluc k na baso eos hct hgb lymph mch mchc mcv mono mpv neut platelet rbc rdw wbc CRP alkphos alt ast totprot chol hdl ldl trig; summaries: mean, min, max, mindiff, maxdiff, tv)
+```
+results = readRDS(model_path)
+xgb_fit = results$xgb_fit
+quantiles = results$quantiles
+```
 
-for a total of 241 columns and 239 predictors.
+The second important function of this package is `predict` which can perform multiple imputation and average the predicted risk
+across the imputations
+
+```
+pred = predict(xgb_fit, df, quantiles, n_imputations=10)
+```
+

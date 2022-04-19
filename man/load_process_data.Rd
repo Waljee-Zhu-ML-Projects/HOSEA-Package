@@ -2,7 +2,7 @@
 % Please edit documentation in R/data.R
 \name{load_process_data}
 \alias{load_process_data}
-\title{Title}
+\title{Processing raw data to final format}
 \usage{
 load_process_data(
   dir = "unzipped_data/",
@@ -21,27 +21,29 @@ load_process_data(
 \arguments{
 \item{dir}{directory containing all files}
 
-\item{files_sample}{}
+\item{files_sample}{list of files containing demographic data}
 
-\item{files_charlson}{}
+\item{files_charlson}{list of files containing icd codes}
 
-\item{files_labs}{}
+\item{files_labs}{list of files containing lab results}
 
-\item{files_meds}{}
+\item{files_meds}{list of files containing medication}
 
-\item{start}{starting year relative to index (default: -5)}
+\item{start}{starting year relative to index (default: -4)}
 
-\item{end}{ending year relative to index (default: -1)}
+\item{end}{ending year relative to index (default: -0)}
 
-\item{verbose}{0 = none, 1 = some, 2 = most, 3=all}
+\item{verbose}{how much to print: 0=none, 1=some, 2=most, 3=all (default)}
 
-\item{icd10startdate}{}
+\item{icd}{which icd codes to use (default: "any")}
 
-\item{icd9enddate}{}
+\item{icd10startdate}{index of beginning of icd10 coding}
+
+\item{icd9enddate}{index of end of icd9 coding}
 }
 \value{
-
+a data frame (df) containing all required for fitting and/or prediction and a data frame (master) contaiing some metadata
 }
 \description{
-Title
+Processing raw data to final format
 }

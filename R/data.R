@@ -1,18 +1,18 @@
-#' Title
+#' Processing raw data to final format
 #'
 #' @param dir directory containing all files
-#' @param start starting year relative to index (default: -5)
-#' @param end ending year relative to index (default: -1)
-#' @param files_sample 
-#' @param files_charlson 
-#' @param files_labs 
-#' @param files_meds 
-#' @param verbose 0 = none, 1 = some, 2 = most, 3=all
-#' @param icd
-#' @param icd10startdate 
-#' @param icd9enddate 
+#' @param start starting year relative to index (default: -4)
+#' @param end ending year relative to index (default: -0)
+#' @param files_sample list of files containing demographic data
+#' @param files_charlson list of files containing icd codes
+#' @param files_labs list of files containing lab results
+#' @param files_meds list of files containing medication
+#' @param verbose how much to print: 0=none, 1=some, 2=most, 3=all (default)
+#' @param icd which icd codes to use (default: "any")
+#' @param icd10startdate index of beginning of icd10 coding
+#' @param icd9enddate index of end of icd9 coding
 #'
-#' @return
+#' @return a data frame (df) containing all required for fitting and/or prediction and a data frame (master) contaiing some metadata
 #' @export
 #' @import dplyr magrittr
 load_process_data = function(
@@ -37,28 +37,10 @@ load_process_data = function(
   
   if(verbose) cat("Computing master table (window, type, etc.)...")
   master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", "clinicaln", "clinicalm", "clinicalt")))
-  # master$case = !is.na(df$datedx)
   master$start = df$indexdate + start * 365 + 1
   master$end = df$indexdate + end * 365 + 1
   if(verbose) cat("done.\n")
   if(verbose) timestamp()
-  
-  # cat("ICD 9/10?...")
-  # if(icd9 & icd10) stop("only one of icd9 or icd10 can be TRUE")
-  # if(icd10) {
-  # master$start = pmax(master$start, icd10startdate)
-  # to_keep = master$start + 365 < master$end
-  # df %<>% filter(to_keep)
-  # master %<>% filter(to_keep)
-  # }
-  # if(icd9) {
-  # master$end = pmin(master$end, icd9enddate)
-  # to_keep = master$start +365 < master$end
-  # df %<>% filter(to_keep)
-  # master %<>% filter(to_keep)
-  # }
-  # cat("done.\n")
-  # timestamp()
   
   if(verbose) cat("Processing demographic variables...")
   df %<>% select(c(id, casecontrol, demo_vars))
@@ -97,19 +79,6 @@ load_process_data = function(
   return(list(df=df, master=master))
 }
 
-
-#' Title
-#'
-#' @param dir 
-#' @param which 
-#' @param master 
-#' @param files 
-#' @param verbose 
-#'
-#' @return 
-#' @export
-#' @import dplyr magrittr
-#' @importFrom purrr reduce
 create_charlson_data = function(dir="./unzipped_data/", files=c("alldxs.sas7bdat"), 
                                 which=charlson_vars, master=NULL, verbose=T){
 
@@ -143,67 +112,6 @@ create_charlson_data = function(dir="./unzipped_data/", files=c("alldxs.sas7bdat
   return(list(df=out, master=master))
 }
 
-
-
-#' 
-#' #' Title
-#' #'
-#' #' @param dir 
-#' #' @param which 
-#' #' @param master 
-#' #'
-#' #' @return
-#' #' @export
-#' #' @import dplyr magrittr
-#' #' @importFrom purrr reduce
-#' #'
-#' #' @examples
-#' create_event_data = function(dir="./unzipped_data/", which=event_vars(), master=NULL, verbose=T){
-#'   dfs = list()
-#'   for(file in which){
-#'     if(verbose) cat(paste0("- ", file, " ...\n"))
-#'     src_df = load_sas(paste0(dir, file, ".sas7bdat"), file)
-#'     # restrict to prediction window
-#'     src_df %<>% left_join(master, by="ID")
-#'     cols = colnames(src_df); cols[2] = "date"; colnames(src_df) = cols
-#'     src_df %<>% filter((date>=start)&(date<=end))
-#'     # ensure ordered
-#'     src_df %<>% arrange(ID, date)
-#'     # lagged variables
-#'     src_df %<>% mutate(ID_lag = lag(ID), date_lag=lag(date))
-#'     new_subject = with(src_df, ID!=ID_lag)
-#'     src_df$ID_lag[new_subject] = NA; src_df$date_lag[new_subject] = NA
-#'     # difference and slope
-#'     src_df = src_df %>% 
-#'       mutate(ddate=ifelse(date-date_lag==0, NA, date-date_lag)) %>% 
-#'       mutate(sdate=1/ddate)
-#'     tmp = src_df %>% group_by(ID) %>% summarize(
-#'       n=n(),
-#'       maxdiff=safe_max(sdate)
-#'     )
-#'     colnames(tmp) = c("ID", paste(file, c("n", "maxdiff"), sep="_"))
-#'     dfs[[file]] = tmp
-#'     if(verbose) cat("  ...done.\n")
-#'   }
-#'   dff = dfs %>% purrr::reduce(full_join, by="ID")
-#'   return(dff)
-#' }
-
-
-
-
-#' Title
-#'
-#' @param dir 
-#' @param which 
-#' @param master 
-#' @param files 
-#' @param verbose 
-#'
-#' @return
-#' @export
-#' @import dplyr magrittr
-#' @importFrom purrr reduce
 create_meds_data = function(dir="./unzipped_data/", files=c("allmeds.sas7bdat"), 
                             which=med_vars, master=NULL, verbose=T){
   dfs = list()
@@ -277,19 +185,6 @@ create_meds_data = function(dir="./unzipped_data/", files=c("allmeds.sas7bdat"),
   return(dff)
 }
 
-
-#' Title
-#'
-#' @param dir 
-#' @param which 
-#' @param master 
-#'
-#' @return
-#' @export
-#' @import dplyr magrittr
-#' @importFrom purrr reduce
-#'
-#' @examples
 create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
                            which=lab_vars, master=NULL, verbose=T){
   dfs = list()
@@ -345,31 +240,6 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
   return(dff)
 }
 
-
-
-#' #' Title
-#' #'
-#' #' @param df 
-#' #' @param dir 
-#' #' @param which 
-#' #'
-#' #' @return
-#' #' @export
-#' #' @import dplyr magrittr
-#' #'
-#' #' @examples
-#' patch_outcome = function(df, dir="./unzipped_data/", which="any"){
-#'   if(which == "any"){ # do nothing, CaseControl already contains both types
-#'     return(df)
-#'   }else{
-#'     stopifnot(which %in% c("EAC", "EDJAC"))
-#'     file = "cancertype"
-#'     src_df = load_sas(paste0(dir, file, ".sas7bdat"), file) 
-#'     src_df %<>% filter(CancerType==which)
-#'     df %<>% mutate(!!which := ifelse(ID %in% src_df$ID, 1, 0))
-#'     return(df)
-#'   }
-#' }
 
 
 

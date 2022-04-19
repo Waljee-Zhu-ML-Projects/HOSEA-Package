@@ -1,18 +1,9 @@
-#' Demographic variable names
-#'
-#' @return
-#' @keywords internal
 demo_vars = c(
   'ageatindex','gender','bmi','weight',
   'asian','black','hawaiianpacific','indianalaskan',
   'smokestatus','agentorange'
 )
 
-
-#' Charlson variable names in new format
-#'
-#' @return
-#' @keywords internal
 charlson_vars = c(
   "gerd",     "chf",      "ctd",      "dem",      "diab_c",      
   "hiv",      "mld",      "msld",     "para",     "rd",       
@@ -20,11 +11,6 @@ charlson_vars = c(
   "pvd"
 )
 
-
-#' Lab variables to keep
-#'
-#' @return
-#' @keywords internal
 lab_vars = c(
   "a1c", "bun", "calc", "chlor", "co2", "creat",
   "gluc", "k", "na", "baso", "eos", "hct", "lymph",
@@ -33,34 +19,12 @@ lab_vars = c(
   "alt", "ast", "totprot", "hdl", "trig"
 )
 
-#' Lab measurement summaries names
-#'
-#' @return
-#' @keywords internal
 lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
 
-
-#' Med variables
-#'
-#' @return
-#' @keywords internal
 med_vars = c("h2r", "ppi")
 
-
-#' Med summaries
-#'
-#' @return
-#' @keywords internal
 med_summaries = c("int", "mean", "max", "maxdiff", "mindiff")
 
-
-#' ICD dictionary
-#'
-#' @param charl 
-#' @param icd which icd code ("icd9" or "icd10")
-#'
-#' @return a function which maps a code to a 0/1 indicator if that code corresponds to the outcome charl
-#' @keywords internal
 charlson_icd = function(charl, icd="icd9"){
   return(list(
   'gerd'=list(

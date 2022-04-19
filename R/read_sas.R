@@ -1,14 +1,3 @@
-#' Load sas files into R
-#'
-#' @param filepath 
-#' @param filename 
-#' @param ... further arguments to pass to haven::read_sas
-#'
-#' @return
-#' @export
-#' @import dplyr
-#' @importFrom haven read_sas
-#' @importFrom stringr str_replace_all
 load_sas = function(filepath, filename, verbose=T, ...){
   rdspath = stringr::str_replace_all(filepath, "sas7bdat", "rds")
   # first check if in rds format, which is much faster to load

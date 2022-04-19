@@ -5,7 +5,7 @@
 \alias{HOSEA}
 \title{HOSEA Package}
 \description{
-A longer description would go here.
+Harnessing Opportunities to Screen for Esophageal Adenocarcinoma
 }
 \author{
 Simon Fontaine \email{simfont@umich.edu}
