@@ -14,7 +14,7 @@ library(HOSEA)
 
 ### Alternative
 
-I had trouble installing it directly through `devtools` so I did it manually:
+I had trouble installing it directly through `devtools` becuase of access rights so I did it manually:
 
 - Clone the repository `https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package.git`
 - Move to the new directory
@@ -49,7 +49,7 @@ A few remarks:
 
 To obtain risk prediction, we first need an XGBoost model from which we extract the imputation data and the model itself:
 
-```
+```r
 results = readRDS(model_path)
 xgb_fit = results$xgb_fit
 quantiles = results$quantiles
@@ -58,7 +58,11 @@ quantiles = results$quantiles
 The second important function of this package is `predict` which can perform multiple imputation and average the predicted risk
 across the imputations
 
-```
-pred = predict(xgb_fit, df, quantiles, n_imputations=10)
+```r
+pred = predict(xgb_fit, out$df, quantiles, n_imputations=10)
 ```
 
+There may be discrepancies between the column names of `out$df` and those in `xgb_fit$feature_anmes` due to updates
+to the data processing function and using an model fitted using older data. I attempted to write some rules to catch them all,
+but it's simpler to just do it manually. This should be fixed in the future when the model will be refitted using all data
+under the new data processing function. Things to look for: lower/upper cases, age, gerd.

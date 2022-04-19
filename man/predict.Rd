@@ -16,7 +16,7 @@ predict(xgb_fit, df, quantiles, n_imputations = 10)
 \item{n_imputations}{number of imputation}
 }
 \value{
-predicted risk averaged over the n imputations
+predicted risk averaged over the n imputations. A data frame with columns (id, risk)
 }
 \description{
 Obtain prediction from XGBoost model

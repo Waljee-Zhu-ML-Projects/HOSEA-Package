@@ -44,12 +44,13 @@ load_process_data = function(
   
   if(verbose) cat("Processing demographic variables...")
   df %<>% select(c(id, casecontrol, demo_vars))
+  df %<>% mutate(age=ageatindex+end) # shift age to end of window
   df %<>% mutate(gender=ifelse(gender=="", NA, gender))
   df %<>% mutate(gender=as.integer(gender=="M"))
   df %<>% mutate(agentorange=as.integer(agentorange=="YES"))
   df %<>% mutate(smoke_current=as.integer(smokestatus==1))
   df %<>% mutate(smoke_former=as.integer(smokestatus==2))
-  df %<>% select(-smokestatus)
+  df %<>% select(-c(smokestatus, ageatindex))
   if(verbose) cat("done.\n")
   if(verbose) timestamp()
   
