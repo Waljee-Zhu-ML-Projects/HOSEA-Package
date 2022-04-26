@@ -64,14 +64,14 @@ load_process_data = function(
   if(verbose) timestamp()
   
   if(verbose) cat("Processing medication variables...")
-  allmeds_df = create_meds_data(dir, master=master, verbose=verbose-1)
+  allmeds_df = create_meds_data(dir, files=files_meds, master=master, verbose=verbose-1)
   df %<>% left_join(allmeds_df, by="id")
   rm(allmeds_df); gc()
   if(verbose) cat("done.\n")
   if(verbose) timestamp()
   
   if(verbose) cat("Processing lab variables...\n")
-  lab_df = create_lab_data(dir, master=master, verbose=verbose-1)
+  lab_df = create_lab_data(dir, files=files_labs, master=master, verbose=verbose-1)
   df %<>% left_join(lab_df, by="id") 
   rm(lab_df); gc()
   if(verbose) cat("...done.\n")
