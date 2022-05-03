@@ -2,6 +2,10 @@
 
 ## Changelog
 
+0.0.0.9004:
+
+- Added quality control
+
 0.0.0.9003:
 
 - Added prediction for the three models (any, eac, egjac)
@@ -51,6 +55,20 @@ A few remarks:
 - `start` and `end` specifies the window during which to compute summaries for labs, medications and comorbidities
 - `verbose` specifies the amount of logging pushed to the console (0-3)
 - `out` is a list with entries `df` which is the dataframe for prediction and `master` which contains some metadata
+
+## Quality control
+
+There are a few simple checks to see if the processed data matches the training data:
+
+```r
+quality_control(out$df)
+```
+
+Currently, this checks for:
+
+- whether we have the correct columns
+- if there are outliers
+- if the missing proportion are similar
 
 ## Risk prediction
 

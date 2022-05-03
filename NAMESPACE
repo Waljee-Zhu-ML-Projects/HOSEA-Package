@@ -2,6 +2,7 @@
 
 S3method(predict,HOSEA)
 export(load_process_data)
+export(quality_control)
 import(dplyr)
 import(magrittr)
 import(purrr)
