@@ -1,6 +1,6 @@
 # HOSEA Package
 
-## Latest update(s)
+## Changelog
 
 0.0.0.9003:
 
@@ -58,13 +58,13 @@ The second important function of this package is `predict.HOSEA` which can perfo
 across the imputations. The predicted risk for all three models (any, EAC only and EGJAC only) is returned averaged over the multiple imputations.
 
 ```r
-pred = predict.HOSEA(out$df, n_imputations=10)
+pred = predict.HOSEA(out$df)
 head(pred)
 ```
 
 If only the combined model is desired, specify
 
 ```r
-pred = predict.HOSEA(out$df, n_imputations=10, xgb_fits=list(ANY=XGB_ANY))
+pred = predict.HOSEA(out$df, xgb_fits=list(ANY=XGB_ANY))
 head(pred)
 ```

@@ -14,6 +14,8 @@
 \item{df}{data frame to predict}
 
 \item{n_imputations}{number of imputation}
+
+\item{xgb_fits}{a list of list(xgb_fit, quantiles, ...)}
 }
 \value{
 predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
