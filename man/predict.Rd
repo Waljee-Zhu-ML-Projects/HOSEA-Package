@@ -2,22 +2,22 @@
 % Please edit documentation in R/predict.R
 \name{predict}
 \alias{predict}
-\title{Obtain prediction from XGBoost model}
+\title{Obtain prediction from XGBoost model(s)}
 \usage{
-predict(xgb_fit, df, quantiles, n_imputations = 10)
+predict(
+  df,
+  n_imputations = 10,
+  xgb_fits = list(ANY = XGB_1M_ANY, EAC = XGB_1M_EAC, EGJAC = XGB_1M_EGJAC)
+)
 }
 \arguments{
-\item{xgb_fit}{the xgboost object}
-
 \item{df}{data frame to predict}
-
-\item{quantiles}{quantiles for imputation}
 
 \item{n_imputations}{number of imputation}
 }
 \value{
-predicted risk averaged over the n imputations. A data frame with columns (id, risk)
+predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 }
 \description{
-Obtain prediction from XGBoost model
+Obtain prediction from XGBoost model(s)
 }

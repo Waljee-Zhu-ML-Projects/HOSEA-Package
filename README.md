@@ -1,5 +1,12 @@
 # HOSEA Package
 
+## Latest update(s)
+
+0.0.0.9003:
+
+- Added prediction for the three models (any, eac, egjac)
+- Models are included in the package and automatically loaded
+
 ## Installation
 
 ### Using `devtools`
@@ -14,7 +21,7 @@ library(HOSEA)
 
 ### Alternative
 
-I had trouble installing it directly through `devtools` becuase of access rights so I did it manually:
+I had trouble installing it directly through `devtools` on the UM cluster becuase of access rights so I did it manually:
 
 - Clone the repository `https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package.git`
 - Move to the new directory
@@ -56,13 +63,9 @@ quantiles = results$quantiles
 ```
 
 The second important function of this package is `predict` which can perform multiple imputation and average the predicted risk
-across the imputations
+across the imputations. The predicted risk for all three models (any, EAC only and EGJAC only) is returned averaged over the multiple imputations.
 
 ```r
-pred = predict(xgb_fit, out$df, quantiles, n_imputations=10)
+pred = predict.HOSEA(out$df, n_imputations=10)
+head(pred)
 ```
-
-There may be discrepancies between the column names of `out$df` and those in `xgb_fit$feature_anmes` due to updates
-to the data processing function and using an model fitted using older data. I attempted to write some rules to catch them all,
-but it's simpler to just do it manually. This should be fixed in the future when the model will be refitted using all data
-under the new data processing function. Things to look for: lower/upper cases, age, gerd.

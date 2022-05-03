@@ -1,25 +1,30 @@
-#' Obtain prediction from XGBoost model
+#' Obtain prediction from XGBoost model(s)
 #'
 #' @param df data frame to predict
-#' @param xgb_fit the xgboost object
-#' @param quantiles quantiles for imputation
 #' @param n_imputations number of imputation
 #'
-#' @return predicted risk averaged over the n imputations. A data frame with columns (id, risk)
+#' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 #' @export
-predict = function(xgb_fit, df, quantiles, n_imputations=10){
-  # imputations
-  imputed = lapply(seq(n_imputations), function(i){
-    set.seed(i)
-    return(impute_srs(df, quantiles))
+#' @import dplyr magrittr xgboost purrr
+predict.HOSEA = function(df, n_imputations=10, xgb_fits=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC)){
+  pred_dfs = lapply(names(xgb_fit), function(name){
+    xgb_fit = xgb_fits[[name]]$xgb_fit
+    quantiles = xgb_fits[[name]]$quantiles
+    # imputations
+    imputed = lapply(seq(n_imputations), function(i){
+      set.seed(i)
+      return(impute_srs(df, quantiles))
+    })
+    imputed %<>% bind_rows()
+    # prediction
+    xgb_df = xgboost::xgb.DMatrix(as.matrix(df %>% select(xgb_fit$feature_names)))
+    proba = xgboost::predict.xgb.Booster(xgb_fit, newdata=xgb_df)
+    pred_df = data.frame(id=df$ID, proba=proba)
+    pred_df %>% group_by(id) %>% summarise(risk=mean(proba))
+    colnames(pred_df) = c("id", name)
   })
-  imputed %<>% bind_rows()
-  # prediction
-  xgb_df = xgb.DMatrix(as.matrix(df %>% select(xgb_fit$feature_names)))
-  proba = predict(xgb_fit, newdata=xgb_df)
-  pred_df = data.frame(id=df$ID, proba=proba)
-  pred_df %>% group_by(id) %>% summarise(risk=mean(proba))
-  return(pred_df)
+  out = pred_dfs %>% purrr::reduce(full_join, by="id")
+  return(out)
 }
 
 
