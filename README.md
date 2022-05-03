@@ -54,18 +54,17 @@ A few remarks:
 
 ## Risk prediction
 
-To obtain risk prediction, we first need an XGBoost model from which we extract the imputation data and the model itself:
-
-```r
-results = readRDS(model_path)
-xgb_fit = results$xgb_fit
-quantiles = results$quantiles
-```
-
-The second important function of this package is `predict` which can perform multiple imputation and average the predicted risk
+The second important function of this package is `predict.HOSEA` which can perform multiple imputation and average the predicted risk
 across the imputations. The predicted risk for all three models (any, EAC only and EGJAC only) is returned averaged over the multiple imputations.
 
 ```r
 pred = predict.HOSEA(out$df, n_imputations=10)
+head(pred)
+```
+
+If only the combined model is desired, specify
+
+```r
+pred = predict.HOSEA(out$df, n_imputations=10, xgb_fits=list(ANY=XGB_ANY))
 head(pred)
 ```
