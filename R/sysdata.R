@@ -29,11 +29,11 @@ charlson_icd = function(charl, icd="icd9"){
   return(list(
   'gerd'=list(
     'icd9'=function(s){
-      as.integer(pmax(substr(s,1,6)=='530.11',
+      as.integer(pmax(substr(s,1,6)=='787.1',
                       substr(s,1,6)=='530.81'))
     },
     'icd10'=function(s){
-      as.integer(substr(s,1,3)=='K21')
+      as.integer(substr(s,1,3)=='R12')
     }),
   'chf'=list(
     'icd9'=function(s){
@@ -372,27 +372,27 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='I70',
                       substr(s,1,3)=='I71'))
     }),
-  'be'=list(
-    'icd9'=function(s){
-      as.integer(pmax(substr(s,1,6)=='530.85'))
-    },
-    'icd10'=function(s){
-      as.integer(pmax(substr(s,1,5)=='K22.70',
-                      substr(s,1,5)=='K22.71'))
-    }),
-  'hh'=list(
-    'icd9'=function(s){
-      as.integer(pmax(substr(s,1,5)=='750.6'))
-    },
-    'icd10'=function(s){
-      as.integer(pmax(substr(s,1,5)=='Q40.1'))
-    }),
-  'estrict'=list(
-    'icd9'=function(s){
-      as.integer(pmax(substr(s,1,5)=='530.3'))
-    },
-    'icd10'=function(s){
-      as.integer(pmax(substr(s,1,5)=='K22.2'))
-    })
+  # 'be'=list(
+  #   'icd9'=function(s){
+  #     as.integer(pmax(substr(s,1,6)=='530.85'))
+  #   },
+  #   'icd10'=function(s){
+  #     as.integer(pmax(substr(s,1,5)=='K22.70',
+  #                     substr(s,1,5)=='K22.71'))
+  #   }),
+  # 'hh'=list(
+  #   'icd9'=function(s){
+  #     as.integer(pmax(substr(s,1,5)=='750.6'))
+  #   },
+  #   'icd10'=function(s){
+  #     as.integer(pmax(substr(s,1,5)=='Q40.1'))
+  #   }),
+  # 'estrict'=list(
+  #   'icd9'=function(s){
+  #     as.integer(pmax(substr(s,1,5)=='530.3'))
+  #   },
+  #   'icd10'=function(s){
+  #     as.integer(pmax(substr(s,1,5)=='K22.2'))
+  #   })
   )[[charl]][[icd]])
 }
