@@ -2,6 +2,10 @@
 
 ## Changelog
 
+0.0.0.9005:
+
+- Updated models to full 10M controls and new GERD coding
+
 0.0.0.9004:
 
 - Added quality control
