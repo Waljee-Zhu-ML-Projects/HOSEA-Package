@@ -371,7 +371,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='Z95.9',
                       substr(s,1,3)=='I70',
                       substr(s,1,3)=='I71'))
-    }),
+    })
   # 'be'=list(
   #   'icd9'=function(s){
   #     as.integer(pmax(substr(s,1,6)=='530.85'))
