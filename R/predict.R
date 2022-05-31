@@ -15,7 +15,7 @@ predict.HOSEA = function(df,
                          ){
   models = intersect(names(xgb_meta), names(xgb_models)) # only models with both will be used
   pred_dfs = lapply(models, function(name){
-    filename = paste0(extdata_path, "/", xgb_models[[name]])
+    filename = paste0(system.file('extdata', package = 'HOSEA'), "/", xgb_models[[name]])
     xgb_fit = xgboost::xgb.load(filename)
     quantiles = xgb_meta[[name]]$quantiles
     # imputations
