@@ -7,7 +7,8 @@
 \method{predict}{HOSEA}(
   df,
   n_imputations = 10,
-  xgb_fits = list(ANY = XGB_ANY, EAC = XGB_EAC, EGJAC = XGB_EGJAC)
+  xgb_meta = list(ANY = XGB_ANY, EAC = XGB_EAC, EGJAC = XGB_EGJAC),
+  xgb_models = list(ANY = "", EAC = "", EGJAC = "")
 )
 }
 \arguments{

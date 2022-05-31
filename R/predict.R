@@ -7,7 +7,11 @@
 #' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 #' @export predict.HOSEA
 #' @import dplyr magrittr xgboost purrr
-predict.HOSEA = function(df, n_imputations=10, xgb_fits=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC)){
+predict.HOSEA = function(df, 
+                         n_imputations=10,
+                         xgb_meta=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC),
+                         xgb_models=list(ANY="", EAC="", EGJAC="")
+                         ){
   pred_dfs = lapply(names(xgb_fits), function(name){
     xgb_fit = xgb_fits[[name]]$xgb_fit
     quantiles = xgb_fits[[name]]$quantiles
