@@ -1,8 +1,9 @@
 #' Obtain prediction from XGBoost model(s)
 #'
 #' @param df data frame to predict
+#' @param xgb_meta list of objects with quantiles 
+#' @param xgb_models list of file names to load models
 #' @param n_imputations number of imputation
-#' @param xgb_fits a list of list(xgb_fit, quantiles, ...)
 #'
 #' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 #' @export predict.HOSEA
@@ -10,11 +11,13 @@
 predict.HOSEA = function(df, 
                          n_imputations=10,
                          xgb_meta=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC),
-                         xgb_models=list(ANY="", EAC="", EGJAC="")
+                         xgb_models=list(ANY="xgb_any.model", EAC="xgb_eac.model", EGJAC="xgb_egjac.model")
                          ){
-  pred_dfs = lapply(names(xgb_fits), function(name){
-    xgb_fit = xgb_fits[[name]]$xgb_fit
-    quantiles = xgb_fits[[name]]$quantiles
+  models = intersect(names(xgb_meta), names(xgb_models)) # only models with both will be used
+  pred_dfs = lapply(models, function(name){
+    filename = paste0(extdata_path, "/", xgb_models[[name]])
+    xgb_fit = xgboost::xgb.load(filename)
+    quantiles = xgb_meta[[name]]$quantiles
     # imputations
     imputed = lapply(seq(n_imputations), function(i){
       set.seed(i)

@@ -8,7 +8,8 @@
   df,
   n_imputations = 10,
   xgb_meta = list(ANY = XGB_ANY, EAC = XGB_EAC, EGJAC = XGB_EGJAC),
-  xgb_models = list(ANY = "", EAC = "", EGJAC = "")
+  xgb_models = list(ANY = "xgb_any.model", EAC = "xgb_eac.model", EGJAC =
+    "xgb_egjac.model")
 )
 }
 \arguments{
@@ -16,7 +17,9 @@
 
 \item{n_imputations}{number of imputation}
 
-\item{xgb_fits}{a list of list(xgb_fit, quantiles, ...)}
+\item{xgb_meta}{list of objects with quantiles}
+
+\item{xgb_models}{list of file names to load models}
 }
 \value{
 predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
