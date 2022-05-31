@@ -11,13 +11,18 @@
 predict.HOSEA = function(df, 
                          n_imputations=10,
                          xgb_meta=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC),
-                         xgb_models=list(ANY="xgb_any.model", EAC="xgb_eac.model", EGJAC="xgb_egjac.model")
+                         xgb_models=list(ANY="xgb_any.model", EAC="xgb_eac.model", EGJAC="xgb_egjac.model"),
+                         use_json=F
                          ){
   models = intersect(names(xgb_meta), names(xgb_models)) # only models with both will be used
   pred_dfs = lapply(models, function(name){
-    filename = paste0(system.file('extdata', package = 'HOSEA'), "/", xgb_models[[name]])
-    xgb_fit = xgboost::xgb.load(filename)
-    xgb_fit$feature_names = xgb_meta[[name]]$xgb_fit$feature_names
+    if(use_json){
+      filename = paste0(system.file('extdata', package = 'HOSEA'), "/", xgb_models[[name]])
+      xgb_fit = xgboost::xgb.load(filename)
+      xgb_fit$feature_names = xgb_meta[[name]]$xgb_fit$feature_names
+    }else{
+      xgb_fit = xgb_meta[[name]]$xgb_fit
+    }
     quantiles = xgb_meta[[name]]$quantiles
     # imputations
     imputed = lapply(seq(n_imputations), function(i){
