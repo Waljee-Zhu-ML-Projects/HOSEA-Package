@@ -17,6 +17,7 @@ predict.HOSEA = function(df,
   pred_dfs = lapply(models, function(name){
     filename = paste0(system.file('extdata', package = 'HOSEA'), "/", xgb_models[[name]])
     xgb_fit = xgboost::xgb.load(filename)
+    xgb_fit$feature_names = xgb_meta[[name]]$xgb_fit$feature_names
     quantiles = xgb_meta[[name]]$quantiles
     # imputations
     imputed = lapply(seq(n_imputations), function(i){
