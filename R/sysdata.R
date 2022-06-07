@@ -16,7 +16,8 @@ lab_vars = c(
   "gluc", "k", "na", "baso", "eos", "hct", "lymph",
   "mch", "mchc", "mcv", "mono", "mpv", "neut",
   "platelet", "rbw", "wbc", "crp", "alkphos", 
-  "alt", "ast", "totprot", "hdl", "ldl", "trig"
+  "alt", "ast", "totprot", "hdl", "ldl", "trig", 
+  "chol", "rbc", "hgb" # these three will be dropped at training time
 )
 
 lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
