@@ -16,7 +16,7 @@ lab_vars = c(
   "gluc", "k", "na", "baso", "eos", "hct", "lymph",
   "mch", "mchc", "mcv", "mono", "mpv", "neut",
   "platelet", "rbw", "wbc", "crp", "alkphos", 
-  "alt", "ast", "totprot", "hdl", "trig"
+  "alt", "ast", "totprot", "hdl", "ldl", "trig"
 )
 
 lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
@@ -29,11 +29,12 @@ charlson_icd = function(charl, icd="icd9"){
   return(list(
   'gerd'=list(
     'icd9'=function(s){
-      as.integer(pmax(substr(s,1,6)=='787.1',
+      as.integer(pmax(substr(s,1,5)=='787.1',
                       substr(s,1,6)=='530.81'))
     },
     'icd10'=function(s){
-      as.integer(substr(s,1,3)=='R12')
+      as.integer(pmax(substr(s,1,3)=='R12',
+                      substr(s,1,5)=='K21.9'))
     }),
   'chf'=list(
     'icd9'=function(s){

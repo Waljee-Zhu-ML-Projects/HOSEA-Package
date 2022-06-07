@@ -1,9 +1,10 @@
 #' Obtain prediction from XGBoost model(s)
 #'
 #' @param df data frame to predict
-#' @param xgb_meta list of objects with quantiles 
-#' @param xgb_models list of file names to load models
-#' @param n_imputations number of imputation
+#' @param xgb_meta list of objects with quantiles (default: all three models)
+#' @param xgb_models list of file names to load models (default: all three models)
+#' @param n_imputations number of imputation (default:10)
+#' @param use_json whether to use the json model or not (default:F)
 #'
 #' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 #' @export predict.HOSEA
