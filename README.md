@@ -2,6 +2,11 @@
 
 ## Changelog
 
+0.0.0.9006:
+
+- Updated models to new ICD10 GERD coding
+- 
+
 0.0.0.9005:
 
 - Updated models to full 10M controls and new GERD coding
@@ -29,7 +34,7 @@ library(HOSEA)
 
 ### Alternative
 
-I had trouble installing it directly through `devtools` on the UM cluster becuase of access rights so I did it manually:
+I had trouble installing it directly through `devtools` on the UM cluster because of access rights so I did it manually:
 
 - Clone the repository `https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package.git`
 - Move to the new directory
@@ -90,3 +95,30 @@ If only the combined model is desired, specify
 pred = predict.HOSEA(out$df, xgb_fits=list(ANY=XGB_ANY))
 head(pred)
 ```
+
+## Notes on updating a model
+
+Here is the current process (these are mostly notes for myself):
+
+- I usually save a memory snapshot of the model to .rds format which is not compatible with other xgboost versions
+- The reason is that I need to save the quantiles as well for imputation, and the `xgboost::xgb.save` function does not allow to save more
+- Then, I read it into R and add it to the loaded data:
+
+```r
+package_dir = "."
+XGB_ANY <- readRDS(paste0(package_dir, "data/XGB_all_ANY.rds"))
+XGB_EAC <- readRDS(paste0(package_dir, "data/XGB_all_EAC.rds"))
+XGB_EGJAC <- readRDS(paste0(package_dir, "data/XGB_all_EGJAC.rds"))
+usethis::use_data(XGB_ANY, XGB_EAC, XGB_EGJAC, overwrite=T)
+```
+
+- Then, I also need to save the JSON files for compatibility
+
+```r
+xgboost::xgb.save(XGB_ANY$xgb_fit, paste0(package_dir, "inst/extdata/xgb_any.model")
+xgboost::xgb.save(XGB_EAC$xgb_fit, paste0(package_dir, "inst/extdata/xgb_eac.model")
+xgboost::xgb.save(XGB_EGJAC$xgb_fit, paste0(package_dir, "inst/extdata/xgb_egjac.model")
+```
+
+- Document, rebuild and push!
+- Note that this should be done on greatlakes to have the correct xgboost version.
