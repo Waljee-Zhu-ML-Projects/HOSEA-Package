@@ -105,7 +105,7 @@ Here is the current process (these are mostly notes for myself):
 - Then, I read it into R and add it to the loaded data:
 
 ```r
-package_dir = "."
+package_dir = "./"
 XGB_ANY <- readRDS(paste0(package_dir, "data/XGB_all_ANY.rds"))
 XGB_EAC <- readRDS(paste0(package_dir, "data/XGB_all_EAC.rds"))
 XGB_EGJAC <- readRDS(paste0(package_dir, "data/XGB_all_EGJAC.rds"))
@@ -121,4 +121,4 @@ xgboost::xgb.save(XGB_EGJAC$xgb_fit, paste0(package_dir, "inst/extdata/xgb_egjac
 ```
 
 - Document, rebuild and push!
-- Note that this should be done on greatlakes to have the correct xgboost version.
+- Note that this should be done on greatlakes to have the correct xgboost version or make sure you have the correct version locally (1.4.1.1).
