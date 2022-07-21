@@ -84,7 +84,7 @@ The second important function of this package is `predict.HOSEA` which can perfo
 across the imputations. The predicted risk for all three models (any, EAC only and EGJAC only) is returned averaged over the multiple imputations.
 
 ```r
-pred = predict.HOSEA(out$df)
+pred = predict.HOSEA(out$df, use_json=T)
 head(pred)
 ```
 
@@ -120,4 +120,4 @@ xgboost::xgb.save(XGB_EGJAC$xgb_fit, paste0(package_dir, "inst/extdata/xgb_egjac
 ```
 
 - Document, rebuild and push!
-- Note that this should be done on greatlakes to have the correct xgboost version or make sure you have the correct version locally (1.4.1.1).
+

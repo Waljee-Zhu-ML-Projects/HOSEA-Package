@@ -4,7 +4,7 @@
 #' @param xgb_meta list of objects with quantiles (default: all three models)
 #' @param xgb_models list of file names to load models (default: all three models)
 #' @param n_imputations number of imputation (default:10)
-#' @param use_json whether to use the json model or not (default:F)
+#' @param use_json whether to use the json model or not (default:T)
 #'
 #' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 #' @export predict.HOSEA
@@ -13,7 +13,7 @@ predict.HOSEA = function(df,
                          n_imputations=10,
                          xgb_meta=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC),
                          xgb_models=list(ANY="xgb_any.model", EAC="xgb_eac.model", EGJAC="xgb_egjac.model"),
-                         use_json=F
+                         use_json=T
                          ){
   models = intersect(names(xgb_meta), names(xgb_models)) # only models with both will be used
   pred_dfs = lapply(models, function(name){

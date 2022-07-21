@@ -205,11 +205,11 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
     if(verbose) cat("  ")
     for(type in intersect(subtypes, which)){
       if(verbose) cat(paste0(type, " "))
-      tmp = src_df %>% select(id, labdate, type)
+      tmp = src_df %>% select(id, labdate, !!type)
+      tmp %<>% tidyr::drop_na(!!type)
       colnames(tmp) = c("id", "labdate", "var")
       # compute lag variables
       tmp %<>% mutate(
-        ID_lag = lag(id),
         labdate_lag = lag(labdate),
         var_lag = lag(var)
       )
@@ -229,9 +229,9 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
           min = safe_min(var),
           maxdiff = safe_max(svar),
           mindiff = safe_min(svar),
-          tiv = safe_mean(abs(svar)),
+          tv = safe_mean(abs(svar)),
         )
-      colnames(tmp) = c("id", paste(type, c("mean", "min", "max", "mindiff", "maxdiff", "tv"), sep="_"))
+      colnames(tmp) = c("id", paste(type, c("mean", "max", "min", "maxdiff", "mindiff", "tv"), sep="_")) 
       
       dfs[[paste(file, type)]] = tmp
     }
