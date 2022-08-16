@@ -2,6 +2,10 @@
 
 ## Changelog
 
+0.0.0.9007:
+
+- Updated models with updated EGJAC cases
+
 0.0.0.9006:
 
 - Updated models to new ICD10 GERD coding
