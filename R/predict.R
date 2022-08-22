@@ -10,11 +10,13 @@
 #' @export predict.HOSEA
 #' @import dplyr magrittr xgboost purrr
 predict.HOSEA = function(df, 
-                         n_imputations=10,
+                         n_imputations=10, # TODO: rename to n_samples for consistency
                          xgb_meta=list(ANY=XGB_ANY, EAC=XGB_EAC, EGJAC=XGB_EGJAC),
                          xgb_models=list(ANY="xgb_any.model", EAC="xgb_eac.model", EGJAC="xgb_egjac.model"),
                          use_json=T
                          ){
+  # TODO: models should rather just contain paths to the model and the feature names
+  # and a separate argument would link to the imputation method
   models = intersect(names(xgb_meta), names(xgb_models)) # only models with both will be used
   pred_dfs = lapply(models, function(name){
     if(use_json){
@@ -25,7 +27,8 @@ predict.HOSEA = function(df,
       xgb_fit = xgb_meta[[name]]$xgb_fit
     }
     quantiles = xgb_meta[[name]]$quantiles
-    # imputations
+    # imputations 
+    # TODO: needs to be updated
     imputed = lapply(seq(n_imputations), function(i){
       set.seed(i)
       return(impute_srs(df, quantiles))
@@ -43,7 +46,7 @@ predict.HOSEA = function(df,
   return(out)
 }
 
-
+# TODO: drop this
 impute_srs = function(df, quantiles){
   n_quantiles = nrow(quantiles)
   for(col in colnames(quantiles)){
