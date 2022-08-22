@@ -30,12 +30,18 @@ HOSEA.mice = function(
 #'
 #' @return the list of models
 #' @export HOSEA.mice.fit
-#' @import dplyr arm progress stats
+#' @import dplyr progress stats
 HOSEA.mice.fit = function(
   df, 
   vars_to_impute, 
   n_rounds=10
 ){
+  if (!requireNamespace("arm", quietly = TRUE)) {
+    stop(
+      "Package \"arm\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   models = lapply(vars_to_impute, function(x) NA)
   names(models) = vars_to_impute
   

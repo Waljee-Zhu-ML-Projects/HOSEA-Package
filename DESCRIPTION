@@ -11,5 +11,7 @@ RoxygenNote: 7.2.0
 Depends: 
     R (>= 2.10)
 Imports: 
-    stats, dplyr, magrittr, haven, stringr, purrr, xgboost, arm, progress, methods, tidyr
+    stats, dplyr, magrittr, haven, stringr, purrr, xgboost, progress, methods, tidyr
+Suggests:
+    arm
 LazyData: true
