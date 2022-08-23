@@ -13,5 +13,5 @@ Depends:
 Imports: 
     stats, dplyr, magrittr, haven, stringr, purrr, xgboost, progress, methods, tidyr
 Suggests:
-    arm
+    mgcv, parallel
 LazyData: true

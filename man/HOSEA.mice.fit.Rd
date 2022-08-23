@@ -4,7 +4,7 @@
 \alias{HOSEA.mice.fit}
 \title{Title}
 \usage{
-HOSEA.mice.fit(df, vars_to_impute, n_rounds = 10)
+HOSEA.mice.fit(df, vars_to_impute, n_rounds = 10, cluster = NULL)
 }
 \arguments{
 \item{df}{}
@@ -12,6 +12,8 @@ HOSEA.mice.fit(df, vars_to_impute, n_rounds = 10)
 \item{vars_to_impute}{}
 
 \item{n_rounds}{}
+
+\item{cluster}{}
 }
 \value{
 the list of models

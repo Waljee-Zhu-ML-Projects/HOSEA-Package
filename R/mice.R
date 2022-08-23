@@ -27,6 +27,7 @@ HOSEA.mice = function(
 #' @param df 
 #' @param vars_to_impute 
 #' @param n_rounds 
+#' @param cluster
 #'
 #' @return the list of models
 #' @export HOSEA.mice.fit
@@ -34,7 +35,8 @@ HOSEA.mice = function(
 HOSEA.mice.fit = function(
   df, 
   vars_to_impute, 
-  n_rounds=10
+  n_rounds=10,
+  cluster=NULL
 ){
   if (!requireNamespace("arm", quietly = TRUE)) {
     stop(
@@ -69,14 +71,14 @@ HOSEA.mice.fit = function(
     for(v in vars_to_impute){
       bin = v %in% bin_vars_to_impute
       rest_of_vars = vars_to_impute[vars_to_impute!=v]
-      formula = paste(v, "~", paste(rest_of_vars, collapse= " + "), collapse = " ")
+      fm = paste(v, "~", paste(rest_of_vars, collapse= " + "), collapse = " ")
       to_train = wdf %>% dplyr::filter(!na_mask[, v]) %>% pull(id)
       to_predict = wdf %>% dplyr::filter(na_mask[, v]) %>% pull(id)
-      models[[v]] = arm::bayesglm(
-        formula=formula,
+      models[[v]] = mgcv::bam(
+        formula=formula(fm),
         data=wdf %>% dplyr::filter(id %in% to_train),
         family=ifelse(bin, binomial(link="logit"), gaussian())[[1]],
-        y=FALSE, model=FALSE # to save memory
+        cluster=cluster, gc.level=1, samfrac=0.1
       )
       # drop things to save memory
       models[[v]]$residuals = NULL
@@ -85,6 +87,9 @@ HOSEA.mice.fit = function(
       models[[v]]$effects = NULL
       models[[v]]$weights = NULL
       models[[v]]$data = NULL
+      models[[v]]$y = NULL
+      models[[v]]$hat = NULL
+      models[[v]]$model = NULL
       
       if(length(to_predict)>0){
         if(bin){
@@ -95,7 +100,7 @@ HOSEA.mice.fit = function(
           models[[v]]$fitted = pred$logit
         }else{
           pred = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin)
-          predsd = sqrt(pred$se.fit^2 + pred$residual.scale^2)
+          predsd = sqrt(pred$se.fit^2 + models[[v]]$sig2)
           new_values = stats::rnorm(n=length(pred$fit)) * predsd + pred$fit
           models[[v]]$fitted = pred$fit
         }

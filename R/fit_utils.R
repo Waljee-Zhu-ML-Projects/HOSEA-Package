@@ -47,15 +47,21 @@ stratified_split = function(
   df,
   proportions=c(train=2, valid=1, test=1)
 ){
-  cases = df %>% filter(casecontrol==1)
-  controls = df %>% filter(casecontrol==0)
   df_names = names(proportions)
-  cases_split = sample(df_names, nrow(cases), prob=proportions, replace=T)
-  controls_split = sample(df_names, nrow(controls), prob=proportions, replace=T)
-  cases_df = lapply(df_names, function(nm) cases %>% filter(cases_split==nm))
+  # cases_split = sample(df_names, nrow(cases), prob=proportions, replace=T)
+  # controls_split = sample(df_names, nrow(controls), prob=proportions, replace=T)
+  cases = df %>% dplyr::filter(casecontrol==1)
+  cases_names = sapply(df_names, function(nm) rep(nm, nrow(cases) * proportions[nm] / sum(proportions)))
+  cases_split = do.call(c, cases_names)[1:nrow(cases)] %>% sample()
+  cases_df = lapply(df_names, function(nm) cases %>% dplyr::filter(cases_split==nm))
   names(cases_df) = df_names
-  controls_df = lapply(df_names, function(nm) controls %>% filter(controls_split==nm))
+  
+  controls = df %>% dplyr::filter(casecontrol==0)
+  controls_names = sapply(df_names, function(nm) rep(nm, nrow(controls) * proportions[nm] / sum(proportions)))
+  controls_split = do.call(c, controls_names)[1:nrow(controls)] %>% sample()
+  controls_df = lapply(df_names, function(nm) controls %>% dplyr::filter(controls_split==nm))
   names(controls_df) = df_names
+  
   out = lapply(df_names, function(nm) bind_rows(cases_df[[nm]], controls_df[[nm]]))
   names(out) = df_names
   return(out)
@@ -63,8 +69,8 @@ stratified_split = function(
 
 
 balanced_resample = function(df){
-  cases = df %>% filter(casecontrol==1)
-  controls = df %>% filter(casecontrol==0)
+  cases = df %>% dplyr::filter(casecontrol==1)
+  controls = df %>% dplyr::filter(casecontrol==0)
   n_controls = nrow(controls)
   cases %<>% sample_n(n_controls, replace=T)
   return(bind_rows(cases, controls))
@@ -103,29 +109,6 @@ prepare_watchlist = function(df_list, vars=NULL){
 }
 
 
-xgb_fit = function(
-  watchlist, 
-  xgb_options,
-  nrounds=2000,
-  verbose=1,
-  print_every_n=10,
-  early_stopping_rounds=100,
-  ...
-){
-  out = xgboost::xgb.train(
-    params=xgb_options,
-    data=watchlist$train,
-    nrounds=nrounds,
-    watchlist=watchlist,
-    verbose=verbose,
-    print_every_n=print_every_n,
-    early_stopping_rounds=early_stopping_rounds,
-    ...
-  )
-  return(out)
-}
-
-
 get_feature_names = function(df, to_drop=NULL){
   cols = colnames(df)
   cols = cols[!(cols %in% c("id", "casecontrol"))]
@@ -144,4 +127,8 @@ summary_df_list = function(df_list){
 summarize_missingness = function(df){
   missing_prop = df %>% mutate(across(everything(), is.na)) %>% colMeans()
   missing_rate = df %>% mutate(across(everything(), is.na)) %>% rowSums() %>% table()
+  return(list(
+    missing_prop=missing_prop,
+    missing_rate=missing_rate
+  ))
 }
