@@ -94,12 +94,12 @@ HOSEA.mice.fit = function(
       if(length(to_predict)>0){
         if(bin){
           pred = list()
-          pred$fit = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response")
-          pred$logit = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link")
+          pred$fit = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", cluster=cluster)
+          pred$logit = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link", cluster=cluster)
           new_values = (stats::runif(length(pred$fit)) > pred$fit) %>% as.integer()
           models[[v]]$fitted = pred$logit
         }else{
-          pred = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin)
+          pred = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin, cluster=cluster)
           predsd = sqrt(pred$se.fit^2 + models[[v]]$sig2)
           new_values = stats::rnorm(n=length(pred$fit)) * predsd + pred$fit
           models[[v]]$fitted = pred$fit
@@ -151,7 +151,8 @@ impute.HOSEA.mice = function(
   obj, 
   df,
   n_samples=1,
-  n_rounds=obj$n_rounds, 
+  n_rounds=obj$n_rounds,
+  cluster=NULL,
   ...
 ){
   df %<>% arrange(id)
@@ -184,13 +185,13 @@ impute.HOSEA.mice = function(
         if(length(to_predict)>0){
           if(bin){
             pred = list()
-            pred$fit = predict(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response")
-            pred$logit = predict(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link")
+            pred$fit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", cluster=cluster)
+            pred$logit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link", cluster=cluster)
             new_values = (runif(length(pred$fit)) > pred$fit) %>% as.integer()
             obj$models[[v]]$fitted = pred$logit
           }else{
-            pred = predict(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin)
-            predsd = sqrt(pred$se.fit^2 + pred$residual.scale^2)
+            pred = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin, cluster=cluster)
+            predsd = sqrt(pred$se.fit^2 + obj$models[[v]]$sig2)
             new_values = rnorm(n=length(pred$fit)) * predsd + pred$fit
             obj$models[[v]]$fitted = pred$fit
           }
