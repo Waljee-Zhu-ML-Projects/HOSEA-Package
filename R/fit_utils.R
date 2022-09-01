@@ -3,22 +3,28 @@
 #' @param df 
 #' @param master 
 #' @param outcome 
+#' @param drop whether to drop other cases when one type is chosen
 #'
 #' @return
 #' @export
 #' @import dplyr magrittr
-patch_outcome = function(df, master, outcome="ANY"){
+patch_outcome = function(df, master, outcome="ANY", drop=F){
   outcomes = master %>% select(id, casecontrol, cancertype)
   outcomes %<>% mutate(
     ANY=casecontrol,
     EAC=as.integer(cancertype=="EAC"),
     EGJAC=as.integer(cancertype=="EGJAC")
   )
-  outcomes_ = outcomes%>%select(id, !!outcome)
+  outcomes_ = outcomes%>%select(id, !!outcome, ANY, EAC, EGJAC)
   df %<>%
     left_join(outcomes_, by="id") %>%
     select(-casecontrol) %>% 
     rename(casecontrol=!!outcome)
+  if(drop){
+    if(outcome=="EGJAC") df %<>% filter(EAC==0)
+    if(outcome=="EAC") df %<>% filter(EGJAC==0)
+  }
+  df %<>% select(-any_of(c("ANY", "EAC", "EGJAC")))
 }
 
 
