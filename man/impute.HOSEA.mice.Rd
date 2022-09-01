@@ -4,7 +4,7 @@
 \alias{impute.HOSEA.mice}
 \title{Title}
 \usage{
-\method{impute}{HOSEA.mice}(obj, df, n_samples = 1, n_rounds = obj$n_rounds, ...)
+\method{impute}{HOSEA.mice}(obj, df, n_samples = 1, n_rounds = obj$n_rounds, cluster = NULL, ...)
 }
 \arguments{
 \item{obj}{}

@@ -4,7 +4,7 @@
 \alias{patch_outcome}
 \title{Title}
 \usage{
-patch_outcome(df, master, outcome = "ANY")
+patch_outcome(df, master, outcome = "ANY", drop = F)
 }
 \arguments{
 \item{df}{}
