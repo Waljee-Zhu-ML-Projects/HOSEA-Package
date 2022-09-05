@@ -21,8 +21,8 @@ patch_outcome = function(df, master, outcome="ANY", drop=F){
     select(-casecontrol) %>% 
     rename(casecontrol=!!outcome)
   if(drop){
-    if(outcome=="EGJAC") df %<>% filter_("EAC"==0)
-    if(outcome=="EAC") df %<>% filter_("EGJAC"==0)
+    if(outcome=="EGJAC") df %<>% filter(EAC==0)
+    if(outcome=="EAC") df %<>% filter(EGJAC==0)
   }
   df %<>% select(-any_of(c("ANY", "EAC", "EGJAC")))
 }

@@ -2,31 +2,27 @@
 % Please edit documentation in R/predict.R
 \name{predict.HOSEA}
 \alias{predict.HOSEA}
-\title{Obtain prediction from XGBoost model(s)}
+\title{Title}
 \usage{
 \method{predict}{HOSEA}(
-  df,
-  n_imputations = 10,
-  xgb_meta = list(ANY = XGB_ANY, EAC = XGB_EAC, EGJAC = XGB_EGJAC),
-  xgb_models = list(ANY = "xgb_any.model", EAC = "xgb_eac.model", EGJAC =
-    "xgb_egjac.model"),
-  use_json = T
+  newdata,
+  models = load_models(),
+  imputer = load_imputer(),
+  n_samples = 10
 )
 }
 \arguments{
-\item{df}{data frame to predict}
+\item{newdata}{data frame to predict, which may contain missing data to be imputed}
 
-\item{n_imputations}{number of imputation (default:10)}
+\item{models}{a list of models to obtain predictions}
 
-\item{xgb_meta}{list of objects with quantiles (default: all three models)}
+\item{imputer}{an imputation object from HOSEA, NULL to perform no imputation}
 
-\item{xgb_models}{list of file names to load models (default: all three models)}
-
-\item{use_json}{whether to use the json model or not (default:T)}
+\item{n_samples}{}
 }
 \value{
 predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
 }
 \description{
-Obtain prediction from XGBoost model(s)
+Title
 }

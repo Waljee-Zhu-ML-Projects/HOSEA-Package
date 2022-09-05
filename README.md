@@ -4,7 +4,10 @@
 
 0.0.0.9008:
 
-- New imputation
+- New imputation and a few helper functions implemented
+- Updated models with MICE imputation
+- Some major changes in API (see updated example below)
+- Quality control should not work anymore, to be updated soon ...
 
 0.0.0.9007:
 
@@ -47,6 +50,12 @@ I had trouble installing it directly through `devtools` on the UM cluster becaus
 - Move to the new directory
 - Install the package `R CMD INSTALL .`
 
+### Alternative 2
+
+- Download the repository `https://gitlab.umich.edu/waljee-zhu-ml-projects/hosea-package/-/archive/main/hosea-package-main.zip`
+- Unzip
+- Use `devtools::install()` to install, passing the appropriate path as argument
+
 ## Data processing
 
 The first function to use is `load_process_data` which will load raw data and proces it into
@@ -68,11 +77,13 @@ A few remarks:
 
 - `dir` is the path to the directory containing all relevant files
 - `files_X` contains list of files for the specific type of information
-- `start` and `end` specifies the window during which to compute summaries for labs, medications and comorbidities
+- `start` and `end` specifies the window during which to compute summaries for labs, medications and comorbidities. The default, `-4` to `0` means we take data up to 4 years before the index date.
 - `verbose` specifies the amount of logging pushed to the console (0-3)
 - `out` is a list with entries `df` which is the dataframe for prediction and `master` which contains some metadata
 
 ## Quality control
+
+<div class="alert alert-warning"> QC is unavailable for now. </div>
 
 There are a few simple checks to see if the processed data matches the training data:
 
@@ -92,18 +103,42 @@ The second important function of this package is `predict.HOSEA` which can perfo
 across the imputations. The predicted risk for all three models (any, EAC only and EGJAC only) is returned averaged over the multiple imputations.
 
 ```r
-pred = predict.HOSEA(out$df, use_json=T)
+pred = predict.HOSEA(out$df)
 head(pred)
 ```
 
-If only the combined model is desired, specify
+If multiple calls are to be performed, speed-ups can be obtained by pre-loading the models:
 
 ```r
-pred = predict.HOSEA(out$df, xgb_fits=list(ANY=XGB_ANY))
-head(pred)
+models=load_models()
+imputer=load_imputer()
+pred = predict.HOSEA(out$df, models=models, imputer=imputer)
 ```
 
+This also allows to select just one model at the time, e.g.,
+
+```r
+models = load_models(files_meta=c(ANY="xgb_mice_any.meta"), files_models=c(ANY="xgb_mice_any.model"))
+pred = predict.HOSEA(out$df, models=models)
+```
+
+## Misc notes
+
+Gitlab:
+
+- There is a recent bug in the interaction between GreatLakes and Gitlab. To fix it, run the following:
+
+```
+export no_proxy=localhost,127.0.0.1,.localdomain
+export NO_PROXY=$no_proxy
+```
+
+- Apparently, ITS is looking to move from Gitlab to GitHub Enterprise soon.
+
 ## Notes on updating a model
+
+<div class="alert alert-warning"> The following is no longer accurate. The current workflow is to simply replace the 
+appropriate files in `inst/extdata/`. </div>
 
 Here is the current process (these are mostly notes for myself):
 

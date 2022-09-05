@@ -12,6 +12,8 @@ patch_outcome(df, master, outcome = "ANY", drop = F)
 \item{master}{}
 
 \item{outcome}{}
+
+\item{drop}{whether to drop other cases when one type is chosen}
 }
 \description{
 Title

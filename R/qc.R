@@ -6,7 +6,8 @@
 #' @return nothing, but will raise warnings when it finds potential issues.
 #' @export
 #' @import dplyr magrittr
-quality_control = function(df, model=XGB_ANY){
+quality_control = function(df, model){
+  stop("Quality control is broken for now.") # TODO: update this!
   xgb_fit=model$xgb_fit
   quantiles=model$quantiles %>% select(xgb_fit$feature_names)
   missing_prop=model$missing_prop

@@ -4,7 +4,7 @@
 \alias{quality_control}
 \title{Performs some simple checks on processed data}
 \usage{
-quality_control(df, model = XGB_ANY)
+quality_control(df, model)
 }
 \arguments{
 \item{df}{the dataframe to check}

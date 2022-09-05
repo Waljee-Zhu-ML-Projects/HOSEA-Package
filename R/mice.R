@@ -130,7 +130,7 @@ HOSEA.mice.fit = function(
     }
   }
   for(m in models) m$fitted = NULL
-  out = list(models=models, n_rounds=r)
+  out = list(models=models, n_rounds=r) # TODO: same the initial imputer as well
   class(out) = "HOSEA.mice"
   return(out)
 }
