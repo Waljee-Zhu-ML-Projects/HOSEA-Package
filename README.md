@@ -122,6 +122,15 @@ models = load_models(files_meta=c(ANY="xgb_mice_any.meta"), files_models=c(ANY="
 pred = predict.HOSEA(out$df, models=models)
 ```
 
+You can also use multiprocessing to speed-up the imputation:
+
+```r
+n_cores = 10
+cluster = parallel::makeCluster(n_cores)
+pred = predict.HOSEA(out$df, cluster=cluster)
+parallel::stopCluster(cluster)
+```
+
 ## Misc notes
 
 Gitlab:
