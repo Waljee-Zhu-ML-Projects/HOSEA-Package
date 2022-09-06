@@ -60,11 +60,11 @@ predict.HOSEA = function(
   newdata,
   models=load_models(), 
   imputer=load_imputer(), 
-  n_samples=10
+  n_samples=10,
+  cluster=NULL
 ){
   if(!is.null(imputer)){
-    newdata = impute(imputer, newdata, n_samples=n_samples)
-    newdata %<>% bind_rows()
+    newdata = impute(imputer, newdata, n_samples=n_samples, cluster=cluster)
   }
   
   pred_dfs = lapply(models, function(name){

@@ -166,8 +166,8 @@ impute.HOSEA.mice = function(
   dfs %<>% bind_rows()
   
   # impute to start
-  na_mask = is.na(df %>% select(obj_cols)) 
-  wdf = HOSEA.srs(df, obj_cols, return_models=F)
+  na_mask = is.na(dfs %>% select(obj_cols)) 
+  wdf = HOSEA.srs(dfs, obj_cols, return_models=F)
   wdf %<>% arrange(id)
   
   # iterate through rounds
