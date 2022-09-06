@@ -81,5 +81,5 @@ impute.HOSEA.srs = function(
   })
   
   # return
-  if(n_samples==1) return(imputed_dfs[[1]]) else return(imputed_dfs)
+  return(imputed_dfs %>% bind_rows())
 }

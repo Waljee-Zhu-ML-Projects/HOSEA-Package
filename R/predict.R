@@ -29,7 +29,7 @@ load_imputer = function(
 #'
 #' @examples
 load_models = function(
-  files_meta=list(ANY="xgb_mice_any.rds", EAC="xgb_mice_eac.rds", EGJAC="xgb_mice_egjac.rds"),
+  files_meta=list(ANY="xgb_mice_any.meta", EAC="xgb_mice_eac.meta", EGJAC="xgb_mice_egjac.meta"),
   files_models=list(ANY="xgb_mice_any.model", EAC="xgb_mice_eac.model", EGJAC="xgb_mice_egjac.model")
 ){
   models = intersect(names(files_meta), names(files_models)) # only models with both will be used
@@ -39,7 +39,9 @@ load_models = function(
     xgb_fit = xgboost::xgb.load(filename_model)
     xgb_meta = readRDS(filename_meta)
     xgb_fit$feature_names = xgb_meta[[model]]$xgb_fit$feature_names
+    return(xgb_fit)
   })
+  names(out) = models
   return(out)
 }
 

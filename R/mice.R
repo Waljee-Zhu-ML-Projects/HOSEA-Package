@@ -161,63 +161,63 @@ impute.HOSEA.mice = function(
   obj_cols = names(obj$model)
   stopifnot(sapply(obj_cols, function(x) x %in% df_cols) %>% all())
   
-  # cycle
-  imputed_dfs = lapply(seq(n_samples), function(i) {
-    # impute to start
-    na_mask = is.na(df %>% select(obj_cols)) 
-    set.seed(i)
-    wdf = HOSEA.srs(df, obj_cols, return_models=F)
-    wdf %<>% arrange(id)
-    
-    # iterate through rounds
-    for(r in seq(n_rounds)){
-      cat("[MICE] Sampling round", r, "\n")
-      pb = progress::progress_bar$new(
-        format="       [:bar] :percent in :elapsed (:current/:total, eta: :eta)",
-        total=length(obj_cols),
-        width=60, clear=F
-      )
-      if(r>1) prev_fitted = lapply(obj$models, function(m) m$fitted)
-      for(v in obj_cols){
-        bin = obj$models[[v]]$family$link == "logit"
-        to_predict = wdf %>% dplyr::filter(na_mask[, v]) %>% pull(id)
-        
-        if(length(to_predict)>0){
-          if(bin){
-            pred = list()
-            pred$fit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", cluster=cluster)
-            pred$logit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link", cluster=cluster)
-            new_values = (runif(length(pred$fit)) > pred$fit) %>% as.integer()
-            obj$models[[v]]$fitted = pred$logit
-          }else{
-            pred = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin, cluster=cluster)
-            predsd = sqrt(pred$se.fit^2 + obj$models[[v]]$sig2)
-            new_values = rnorm(n=length(pred$fit)) * predsd + pred$fit
-            obj$models[[v]]$fitted = pred$fit
-          }
-          names(new_values) = to_predict
-          wdf[wdf %>% pull(id) %in% to_predict, v] = new_values
+  # augment df
+  dfs = lapply(seq(n_samples), function(i) df)
+  dfs %<>% bind_rows()
+  
+  # impute to start
+  na_mask = is.na(df %>% select(obj_cols)) 
+  wdf = HOSEA.srs(df, obj_cols, return_models=F)
+  wdf %<>% arrange(id)
+  
+  # iterate through rounds
+  for(r in seq(n_rounds)){
+    cat("[MICE] Sampling round", r, "\n")
+    pb = progress::progress_bar$new(
+      format="       [:bar] :percent in :elapsed (:current/:total, eta: :eta)",
+      total=length(obj_cols),
+      width=60, clear=F
+    )
+    if(r>1) prev_fitted = lapply(obj$models, function(m) m$fitted)
+    for(v in obj_cols){
+      bin = obj$models[[v]]$family$link == "logit"
+      to_predict = wdf %>% dplyr::filter(na_mask[, v]) %>% pull(id)
+      
+      if(length(to_predict)>0){
+        if(bin){
+          pred = list()
+          pred$fit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", cluster=cluster)
+          pred$logit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link", cluster=cluster)
+          new_values = (runif(length(pred$fit)) > pred$fit) %>% as.integer()
+          obj$models[[v]]$fitted = pred$logit
         }else{
-          obj$models[[v]]$fitted = NA
+          pred = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin, cluster=cluster)
+          predsd = sqrt(pred$se.fit^2 + obj$models[[v]]$sig2)
+          new_values = rnorm(n=length(pred$fit)) * predsd + pred$fit
+          obj$models[[v]]$fitted = pred$fit
         }
-        pb$tick()
+        names(new_values) = to_predict
+        wdf[wdf %>% pull(id) %in% to_predict, v] = new_values
+      }else{
+        obj$models[[v]]$fitted = NA
       }
-      if(r>1){
-        rel_change = sapply(names(obj$models), function(m){
-          bin = obj$models[[v]]$family$link == "logit"
-          f0 = prev_fitted[[m]]
-          f1 = obj$models[[m]]$fitted
-          sq_change = (f1-f0)^2
-          return(c(ss=sum(sq_change), var=var(f0), n=length(f0)))
-        }) %>% t() %>% data.frame()
-        tss = (rel_change$ss/rel_change$var) %>% sum(na.rm=T)
-        n = sum(rel_change$n, na.rm=T)
-        cat("       Lin. pred. rel. change: ", tss / n, "\n")
-      }
+      pb$tick()
     }
-    return(wdf)
-  })
+    if(r>1){
+      rel_change = sapply(names(obj$models), function(m){
+        bin = obj$models[[v]]$family$link == "logit"
+        f0 = prev_fitted[[m]]
+        f1 = obj$models[[m]]$fitted
+        sq_change = (f1-f0)^2
+        return(c(ss=sum(sq_change), var=var(f0), n=length(f0)))
+      }) %>% t() %>% data.frame()
+      tss = (rel_change$ss/rel_change$var) %>% sum(na.rm=T)
+      n = sum(rel_change$n, na.rm=T)
+      cat("       Lin. pred. rel. change: ", tss / n, "\n")
+    }
+  }
+  
   
   # return
-  if(n_samples==1) return(imputed_dfs[[1]]) else return(imputed_dfs)
+  return(wdf)
 }
