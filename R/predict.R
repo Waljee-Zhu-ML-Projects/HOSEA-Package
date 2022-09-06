@@ -29,7 +29,7 @@ load_imputer = function(
 #'
 #' @examples
 load_models = function(
-  files_meta=list(ANY="xgb_mice_any.meta", EAC="xgb_mice_eac.meta", EGJAC="xgb_mice_egjac.meta"),
+  files_meta=list(ANY="xgb_mice_any.rds", EAC="xgb_mice_eac.rds", EGJAC="xgb_mice_egjac.rds"),
   files_models=list(ANY="xgb_mice_any.model", EAC="xgb_mice_eac.model", EGJAC="xgb_mice_egjac.model")
 ){
   models = intersect(names(files_meta), names(files_models)) # only models with both will be used
@@ -37,7 +37,7 @@ load_models = function(
     filename_model = paste0(system.file('extdata', package = 'HOSEA'), "/", files_models[[model]])
     filename_meta  = paste0(system.file('extdata', package = 'HOSEA'), "/", files_meta[[model]])
     xgb_fit = xgboost::xgb.load(filename_model)
-    xgb_meta = readRDS(files_meta)
+    xgb_meta = readRDS(filename_meta)
     xgb_fit$feature_names = xgb_meta[[model]]$xgb_fit$feature_names
   })
   return(out)
@@ -52,7 +52,7 @@ load_models = function(
 #' @param n_samples 
 #'
 #' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
-#' @export
+#' @export predict.HOSEA
 #' @import dplyr magrittr xgboost purrr
 predict.HOSEA = function(
   newdata,
