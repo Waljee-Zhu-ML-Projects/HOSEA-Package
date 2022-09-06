@@ -33,12 +33,12 @@ load_models = function(
   files_models=list(ANY="xgb_mice_any.model", EAC="xgb_mice_eac.model", EGJAC="xgb_mice_egjac.model")
 ){
   models = intersect(names(files_meta), names(files_models)) # only models with both will be used
-  out = lapply(models, function(model){
-    filename_model = paste0(system.file('extdata', package = 'HOSEA'), "/", files_models[[model]])
-    filename_meta  = paste0(system.file('extdata', package = 'HOSEA'), "/", files_meta[[model]])
+  out = lapply(models, function(name){
+    filename_model = paste0(system.file('extdata', package = 'HOSEA'), "/", files_models[[name]])
+    filename_meta  = paste0(system.file('extdata', package = 'HOSEA'), "/", files_meta[[name]])
     xgb_fit = xgboost::xgb.load(filename_model)
     xgb_meta = readRDS(filename_meta)
-    xgb_fit$feature_names = xgb_meta[[model]]$xgb_fit$feature_names
+    xgb_fit$feature_names = xgb_meta$xgb_fit$feature_names
     return(xgb_fit)
   })
   names(out) = models
@@ -67,12 +67,12 @@ predict.HOSEA = function(
     newdata = impute(imputer, newdata, n_samples=n_samples, cluster=cluster)
   }
   
-  pred_dfs = lapply(models, function(name){
+  pred_dfs = lapply(names(models), function(name){
     # prediction
     xgb_df = xgboost::xgb.DMatrix(as.matrix(newdata %>% select(models[[name]]$feature_names)))
     proba = predict(models[[name]], newdata=xgb_df)
     pred_df = data.frame(id=newdata$id, proba=proba)
-    pred_df %>% group_by(id) %>% summarise(risk=mean(proba))
+    pred_df %<>% group_by(id) %>% summarise(risk=mean(proba))
     colnames(pred_df) = c("id", name)
     return(pred_df)
   })
