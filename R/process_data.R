@@ -43,8 +43,8 @@ load_process_data = function(
   if(verbose) utils::timestamp()
   
   if(verbose) cat("Processing demographic variables...")
-  df %<>% select(c(.data$id, .data$casecontrol, .data$demo_vars))
-  df %<>% mutate(age=.data$ageatindex+.data$end) # shift age to end of window
+  df %<>% select(c(.data$id, .data$casecontrol, demo_vars))
+  df %<>% mutate(age=.data$ageatindex+end) # shift age to end of window
   df %<>% mutate(gender=ifelse(.data$gender=="", NA, .data$gender))
   df %<>% mutate(gender=as.integer(.data$gender=="M"))
   df %<>% mutate(agentorange=as.integer(.data$agentorange=="YES"))
