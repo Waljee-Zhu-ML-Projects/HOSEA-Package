@@ -90,7 +90,7 @@ create_charlson_data = function(dir="./unzipped_data/", files=c("alldxs.sas7bdat
     colnames(src_df) %<>% tolower()
     # restrict to prediction window
     src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
-    src_df %<>% filter((.data$dxdate>=.data$start)&(.data$dxdate<=.data$end))
+    src_df %<>% dplyr::filter(dplyr::between(.data$dxdate, .data$start, .data$end))
     
     dfs = list()
     if(verbose) cat("  ")
@@ -120,16 +120,16 @@ create_meds_data = function(dir="./unzipped_data/", files=c("allmeds.sas7bdat"),
     src_df = load_sas(paste0(dir, file), "meds", verbose=verbose-1)
     colnames(src_df) %<>% tolower()
     src_df %<>% mutate(med_type=tolower(.data$med_type))
-    src_df %<>% filter(.data$med_type %in% which) 
+    src_df %<>% dplyr::filter(.data$med_type %in% which) 
     # restrict to prediction window
     src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
-    src_df %<>% filter((.data$newenddate>=.data$start)&(.data$filldate<=.data$end)) # at least some overlap
+    src_df %<>% dplyr::filter((.data$newenddate>=.data$start)&(.data$filldate<=.data$end)) # at least some overlap
     # ensure ordered
     src_df %<>% arrange(.data$id, .data$filldate)
     
     for(type in which){
       if(verbose) cat(paste0("- ", type, " ...\n"))
-      tmp = src_df %>% filter(.data$med_type==type)
+      tmp = src_df %>% dplyr::filter(.data$med_type==type)
       # clip dates to prediction window & compute lag
       tmp %<>% mutate(
         filldate=pmax(.data$start,.data$filldate),
@@ -145,7 +145,7 @@ create_meds_data = function(dir="./unzipped_data/", files=c("allmeds.sas7bdat"),
       end_after = tmp$enddate<tmp$next_filldate
       tmp = bind_rows(
         tmp %>% select(.data$id, .data$filldate, .data$dd),
-        tmp %>% filter(end_after) %>% 
+        tmp %>% dplyr::filter(end_after) %>% 
           mutate(dd=ifelse(.data$enddate==.data$end, .data$dd, 0), filldate=.data$enddate) %>% 
           select(.data$id, .data$filldate, .data$dd)
       )
@@ -198,7 +198,7 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
     subtypes = tail(colnames(src_df), -2)
     # restrict to prediction window
     src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
-    src_df %<>% filter((.data$labdate>=.data$start)&(.data$labdate<=.data$end))
+    src_df %<>% dplyr::filter((.data$labdate>=.data$start)&(.data$labdate<=.data$end))
     # ensure ordered
     src_df %<>% arrange(.data$id, .data$labdate)
     
