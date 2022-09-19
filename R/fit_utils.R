@@ -9,20 +9,20 @@
 #' @export
 #' @import dplyr magrittr
 patch_outcome = function(df, master, outcome="ANY", drop=F){
-  outcomes = master %>% select(id, casecontrol, cancertype)
+  outcomes = master %>% select(.data$id, .data$casecontrol, .data$cancertype)
   outcomes %<>% mutate(
-    ANY=casecontrol,
-    EAC=as.integer(cancertype=="EAC"),
-    EGJAC=as.integer(cancertype=="EGJAC")
+    ANY=.data$casecontrol,
+    EAC=as.integer(.data$cancertype=="EAC"),
+    EGJAC=as.integer(.data$cancertype=="EGJAC")
   )
-  outcomes_ = outcomes%>%select(id, !!outcome, ANY, EAC, EGJAC)
+  outcomes_ = outcomes%>%select(any_of("id", outcome, "ANY", "EAC", "EGJAC"))
   df %<>%
     left_join(outcomes_, by="id") %>%
-    select(-casecontrol) %>% 
-    rename(casecontrol=!!outcome)
+    select(-.data$casecontrol) %>% 
+    rename(casecontrol = !!outcome)
   if(drop){
-    if(outcome=="EGJAC") df %<>% filter(EAC==0)
-    if(outcome=="EAC") df %<>% filter(EGJAC==0)
+    if(outcome=="EGJAC") df %<>% filter(.data$EAC==0)
+    if(outcome=="EAC") df %<>% filter(.data$EGJAC==0)
   }
   df %<>% select(-any_of(c("ANY", "EAC", "EGJAC")))
 }
@@ -56,13 +56,13 @@ stratified_split = function(
   df_names = names(proportions)
   # cases_split = sample(df_names, nrow(cases), prob=proportions, replace=T)
   # controls_split = sample(df_names, nrow(controls), prob=proportions, replace=T)
-  cases = df %>% dplyr::filter(casecontrol==1)
+  cases = df %>% dplyr::filter(.data$casecontrol==1)
   cases_names = sapply(df_names, function(nm) rep(nm, nrow(cases) * proportions[nm] / sum(proportions)))
   cases_split = do.call(c, cases_names)[1:nrow(cases)] %>% sample()
   cases_df = lapply(df_names, function(nm) cases %>% dplyr::filter(cases_split==nm))
   names(cases_df) = df_names
   
-  controls = df %>% dplyr::filter(casecontrol==0)
+  controls = df %>% dplyr::filter(.data$casecontrol==0)
   controls_names = sapply(df_names, function(nm) rep(nm, nrow(controls) * proportions[nm] / sum(proportions)))
   controls_split = do.call(c, controls_names)[1:nrow(controls)] %>% sample()
   controls_df = lapply(df_names, function(nm) controls %>% dplyr::filter(controls_split==nm))
@@ -75,8 +75,8 @@ stratified_split = function(
 
 
 balanced_resample = function(df){
-  cases = df %>% dplyr::filter(casecontrol==1)
-  controls = df %>% dplyr::filter(casecontrol==0)
+  cases = df %>% dplyr::filter(.data$casecontrol==1)
+  controls = df %>% dplyr::filter(.data$casecontrol==0)
   n_controls = nrow(controls)
   cases %<>% sample_n(n_controls, replace=T)
   return(bind_rows(cases, controls))
@@ -93,7 +93,7 @@ balanced_resample = function(df){
 #' @import xgboost dplyr
 to_xgb = function(df, vars=NULL){
   if(is.null(vars)){
-    out = xgboost::xgb.DMatrix(as.matrix(df%>%select(-c(id,casecontrol))),
+    out = xgboost::xgb.DMatrix(as.matrix(df%>%select(-c(.data$id,.data$casecontrol))),
                       label=df$casecontrol)
   }else{
     out = xgboost::xgb.DMatrix(as.matrix(df%>%select(vars)),

@@ -10,13 +10,13 @@ load_sas = function(filepath, filename, verbose=T, ...){
   df = haven::read_sas(filepath, ...)
   if(verbose) cat(paste("  Loaded from SAS format:", filepath), fill=T)
   # path column names
-  try(df%<>%rename(id=id_V2))
+  try(df%<>%rename(id=.data$id_V2))
   # sort
   df = switch(filename,
-              sample=arrange(df, id, NA),
-              labs=arrange(df, id, labdate),
-              meds=arrange(df, id, filldate),
-              charlson=arrange(df, id, dxdate),
+              sample=df %>% arrange(.data$id, NA),
+              labs=df %>% arrange(.data$id, .data$labdate),
+              meds=df %>% arrange(.data$id, .data$filldate),
+              charlson=df %>% arrange(.data$id, .data$dxdate),
               df # no match, e.e.g cancertype
   )
   saveRDS(df, rdspath)

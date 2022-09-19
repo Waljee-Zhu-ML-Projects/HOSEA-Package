@@ -49,7 +49,7 @@ HOSEA.fit = function(
   params_xgb = do.call(xgboost_options, list(...))
   params_xgb$scale_pos_weight = n1all/n0all
   cat("[HOSEA] Starting XGBoost fitting\n")
-  cat("[HOSEA]", timestamp(prefix="", suffix="", quiet=T), "\n")
+  cat("[HOSEA]", utils::timestamp(prefix="", suffix="", quiet=T), "\n")
   xgb_fit = xgboost::xgb.train(
     params=params_xgb,
     data=watchlist$train,
@@ -59,7 +59,7 @@ HOSEA.fit = function(
     print_every_n=print_every_n,
     early_stopping_rounds=early_stopping_rounds
   )
-  cat("[HOSEA]", timestamp(prefix="", suffix="", quiet=T), "\n")
+  cat("[HOSEA]", utils::timestamp(prefix="", suffix="", quiet=T), "\n")
   out = list(
     xgb_fit=xgb_fit,
     imputer=imputer, 

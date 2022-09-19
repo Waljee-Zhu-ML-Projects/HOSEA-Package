@@ -26,33 +26,33 @@ load_process_data = function(
   icd="any", icd10startdate=17229, icd9enddate=17229-3*31
 ){
   if(verbose) cat(paste0("Processing data from ", dir, " restricted to years ", start, " to ", end, "\n"))
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Loading sample data...")
   dfs = lapply(files_sample, function(file) load_sas(paste0(dir, file), "sample", verbose=verbose-1))
   df = bind_rows(dfs)
   colnames(df) %<>% tolower()
   if(verbose) cat("done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Computing master table (window, type, etc.)...")
   master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", "clinicaln", "clinicalm", "clinicalt")))
   master$start = df$indexdate + start * 365 + 1
   master$end = df$indexdate + end * 365 + 1
   if(verbose) cat("done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Processing demographic variables...")
-  df %<>% select(c(id, casecontrol, demo_vars))
-  df %<>% mutate(age=ageatindex+end) # shift age to end of window
-  df %<>% mutate(gender=ifelse(gender=="", NA, gender))
-  df %<>% mutate(gender=as.integer(gender=="M"))
-  df %<>% mutate(agentorange=as.integer(agentorange=="YES"))
-  df %<>% mutate(smoke_current=as.integer(smokestatus==1))
-  df %<>% mutate(smoke_former=as.integer(smokestatus==2))
-  df %<>% select(-c(smokestatus, ageatindex))
+  df %<>% select(c(.data$id, .data$casecontrol, .data$demo_vars))
+  df %<>% mutate(age=.data$ageatindex+.data$end) # shift age to end of window
+  df %<>% mutate(gender=ifelse(.data$gender=="", NA, .data$gender))
+  df %<>% mutate(gender=as.integer(.data$gender=="M"))
+  df %<>% mutate(agentorange=as.integer(.data$agentorange=="YES"))
+  df %<>% mutate(smoke_current=as.integer(.data$smokestatus==1))
+  df %<>% mutate(smoke_former=as.integer(.data$smokestatus==2))
+  df %<>% select(-c(.data$smokestatus, .data$ageatindex))
   if(verbose) cat("done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Processing Charlson indicators...\n")
   out = create_charlson_data(dir, files=files_charlson, master=master, verbose=verbose-1)
@@ -61,21 +61,21 @@ load_process_data = function(
   df %<>% left_join(charlson_df, by="id") 
   rm(charlson_df, out); gc()
   if(verbose) cat("...done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Processing medication variables...")
   allmeds_df = create_meds_data(dir, files=files_meds, master=master, verbose=verbose-1)
   df %<>% left_join(allmeds_df, by="id")
   rm(allmeds_df); gc()
   if(verbose) cat("done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Processing lab variables...\n")
   lab_df = create_lab_data(dir, files=files_labs, master=master, verbose=verbose-1)
   df %<>% left_join(lab_df, by="id") 
   rm(lab_df); gc()
   if(verbose) cat("...done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   return(list(df=df, master=master))
 }
@@ -89,8 +89,8 @@ create_charlson_data = function(dir="./unzipped_data/", files=c("alldxs.sas7bdat
     src_df = load_sas(paste0(dir, file), "charlson", verbose=verbose-1)
     colnames(src_df) %<>% tolower()
     # restrict to prediction window
-    src_df %<>% left_join(master %>% select(id, start, end), by="id")
-    src_df %<>% filter((dxdate>=start)&(dxdate<=end))
+    src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
+    src_df %<>% filter((.data$dxdate>=.data$start)&(.data$dxdate<=.data$end))
     
     dfs = list()
     if(verbose) cat("  ")
@@ -98,18 +98,18 @@ create_charlson_data = function(dir="./unzipped_data/", files=c("alldxs.sas7bdat
       if(verbose) cat(paste0(charl, " "))
       icd9codes = charlson_icd(charl, "icd9")
       icd10codes = charlson_icd(charl, "icd10")
-      tmp = src_df %>% mutate(charl9=icd9codes(icd9code))
-      tmp %<>% mutate(charl10=icd10codes(icd10code))
-      tmp %<>% group_by(id) %>% select(id, charl9, charl10) %>% summarize_all(max)
-      tmp %<>% summarize(id=id, charl=pmax(charl9, charl10))
+      tmp = src_df %>% mutate(charl9=icd9codes(.data$icd9code))
+      tmp %<>% mutate(charl10=icd10codes(.data$icd10code))
+      tmp %<>% group_by(.data$id) %>% select(.data$id, .data$charl9, .data$charl10) %>% summarize_all(max)
+      tmp %<>% summarize(id=.data$id, charl=pmax(.data$charl9, .data$charl10))
       colnames(tmp) = c("id", charl)
       dfs[[charl]] = tmp
     }
     dff = dfs %>% purrr::reduce(full_join, by='id')
-    out_df[[file]] = dff %>% group_by(id) %>% summarize_all(max)
+    out_df[[file]] = dff %>% group_by(.data$id) %>% summarize_all(max)
     if(verbose) cat("\n  ...done.\n")
   }
-  out = bind_rows(out_df) %>% group_by(id) %>% summarize_all(max)
+  out = bind_rows(out_df) %>% group_by(.data$id) %>% summarize_all(max)
   return(list(df=out, master=master))
 }
 
@@ -119,62 +119,62 @@ create_meds_data = function(dir="./unzipped_data/", files=c("allmeds.sas7bdat"),
   for(file in files){
     src_df = load_sas(paste0(dir, file), "meds", verbose=verbose-1)
     colnames(src_df) %<>% tolower()
-    src_df %<>% mutate(med_type=tolower(med_type))
-    src_df %<>% filter(med_type %in% which) 
+    src_df %<>% mutate(med_type=tolower(.data$med_type))
+    src_df %<>% filter(.data$med_type %in% which) 
     # restrict to prediction window
-    src_df %<>% left_join(master %>% select(id, start, end), by="id")
-    src_df %<>% filter((newenddate>=start)&(filldate<=end)) # at least some overlap
+    src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
+    src_df %<>% filter((.data$newenddate>=.data$start)&(.data$filldate<=.data$end)) # at least some overlap
     # ensure ordered
-    src_df %<>% arrange(id, filldate)
+    src_df %<>% arrange(.data$id, .data$filldate)
     
     for(type in which){
       if(verbose) cat(paste0("- ", type, " ...\n"))
-      tmp = src_df %>% filter(med_type==type)
+      tmp = src_df %>% filter(.data$med_type==type)
       # clip dates to prediction window & compute lag
       tmp %<>% mutate(
-        filldate=pmax(start,filldate),
-        enddate=pmin(end,newenddate),
-        next_ID=lead(id),
-        next_filldate=lead(filldate, default=Inf)
+        filldate=pmax(.data$start,.data$filldate),
+        enddate=pmin(.data$end,.data$newenddate),
+        next_ID=lead(.data$id),
+        next_filldate=lead(.data$filldate, default=Inf)
       )
-      tmp %<>% select(id, filldate, enddate, next_ID, next_filldate, dd, end, start)
-      last_entry = with(tmp, id!=next_ID)
+      tmp %<>% select(one_of("id", "filldate", "enddate", "next_ID", "next_filldate", "dd", "end", "start"))
+      last_entry = tmp$id!=tmp$next_ID
       tmp$next_ID[last_entry] = NA; tmp$next_filldate[last_entry] = Inf
       if(verbose) cat("  clipped dates to prediction window\n")
       # add dummy rows for gaps with 0 dose (unless it goes beyond the prediction window)
-      end_after = with(tmp, enddate<next_filldate)
+      end_after = tmp$enddate<tmp$next_filldate
       tmp = bind_rows(
-        tmp %>% select(id, filldate, dd),
+        tmp %>% select(.data$id, .data$filldate, .data$dd),
         tmp %>% filter(end_after) %>% 
-          mutate(dd=ifelse(enddate==end, dd, 0), filldate=enddate) %>% 
-          select(id, filldate, dd)
+          mutate(dd=ifelse(.data$enddate==.data$end, .data$dd, 0), filldate=.data$enddate) %>% 
+          select(.data$id, .data$filldate, .data$dd)
       )
-      tmp %<>% arrange(id, filldate)
+      tmp %<>% arrange(.data$id, .data$filldate)
       colnames(tmp) = c("id", "date", "dose")
       if(verbose) cat("  added dummy rows for gaps\n")
       # compute variables
       tmp %<>% mutate(
-        ID_next = lead(id),
-        date_next = lead(date),
-        dose_next = lead(dose)
+        ID_next = lead(.data$id),
+        date_next = lead(.data$date),
+        dose_next = lead(.data$dose)
       )
-      new_subject = with(tmp, id!=ID_next)
+      new_subject = tmp$id!=tmp$ID_next
       tmp$ID_next[new_subject] = NA
       tmp$date_next[new_subject] = NA
       tmp$dose_next[new_subject] = NA
       tmp = tmp %>% mutate(
-        ddate=pmax(1, date_next-date),
-        ddose=dose_next-dose
+        ddate=pmax(1, .data$date_next-.data$date),
+        ddose=.data$dose_next-.data$dose
       ) %>% mutate(
-        sdose=ddose/ddate,
-        pdose=dose*ddate
+        sdose=.data$ddose/.data$ddate,
+        pdose=.data$dose*.data$ddate
       )
-      tmp = tmp %>% group_by(id) %>% summarize(
-        int=safe_sum(pdose),
-        mean=safe_mean(dose),
-        max=safe_max(dose),
-        maxdiff=safe_max(sdose),
-        tv=safe_mean(abs(sdose))
+      tmp = tmp %>% group_by(.data$id) %>% summarize(
+        int=safe_sum(.data$pdose),
+        mean=safe_mean(.data$dose),
+        max=safe_max(.data$dose),
+        maxdiff=safe_max(.data$sdose),
+        tv=safe_mean(abs(.data$sdose))
       )
       if(verbose) cat("  computed variables\n")
       colnames(tmp) = c("id", paste(tolower(type), c("int", "mean", "max", "maxdiff", "tv"), sep="_"))
@@ -197,39 +197,39 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
     colnames(src_df) %<>% tolower()
     subtypes = tail(colnames(src_df), -2)
     # restrict to prediction window
-    src_df %<>% left_join(master %>% select(id, start, end), by="id")
-    src_df %<>% filter((labdate>=start)&(labdate<=end))
+    src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
+    src_df %<>% filter((.data$labdate>=.data$start)&(.data$labdate<=.data$end))
     # ensure ordered
-    src_df %<>% arrange(id, labdate)
+    src_df %<>% arrange(.data$id, .data$labdate)
     
     if(verbose) cat("  ")
     for(type in intersect(subtypes, which)){
       if(verbose) cat(paste0(type, " "))
-      tmp = src_df %>% select(id, labdate, !!type)
+      tmp = src_df %>% select(.data$id, .data$labdate, !!type)
       tmp %<>% tidyr::drop_na(!!type)
       colnames(tmp) = c("id", "labdate", "var")
       # compute lag variables
       tmp %<>% mutate(
-        labdate_lag = lag(labdate),
-        var_lag = lag(var)
+        labdate_lag = lag(.data$labdate),
+        var_lag = lag(.data$var)
       )
       # compute diff and slope
       tmp %<>% mutate(
-        dlabdate = pmax(1, labdate - labdate_lag),
-        dvar = var - var_lag
+        dlabdate = pmax(1, .data$labdate - .data$labdate_lag),
+        dvar = .data$var - .data$var_lag
       )
       tmp %<>% mutate(
-        svar = dvar / dlabdate
+        svar = .data$dvar / .data$dlabdate
       )
       # compute summaries
-      tmp = tmp %>% group_by(id) %>%
+      tmp = tmp %>% group_by(.data$id) %>%
         summarize(
-          mean = safe_mean(var),
-          max = safe_max(var),
-          min = safe_min(var),
-          maxdiff = safe_max(svar),
-          mindiff = safe_min(svar),
-          tv = safe_mean(abs(svar)),
+          mean = safe_mean(.data$var),
+          max = safe_max(.data$var),
+          min = safe_min(.data$var),
+          maxdiff = safe_max(.data$svar),
+          mindiff = safe_min(.data$svar),
+          tv = safe_mean(abs(.data$svar)),
         )
       colnames(tmp) = c("id", paste(type, c("mean", "max", "min", "maxdiff", "mindiff", "tv"), sep="_")) 
       
