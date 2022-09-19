@@ -8,7 +8,8 @@
   newdata,
   models = load_models(),
   imputer = load_imputer(),
-  n_samples = 10
+  n_samples = 10,
+  cluster = NULL
 )
 }
 \arguments{
