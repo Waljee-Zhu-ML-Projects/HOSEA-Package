@@ -26,21 +26,33 @@ load_process_data = function(
   icd="any", icd10startdate=17229, icd9enddate=17229-3*31
 ){
   if(verbose) cat(paste0("Processing data from ", dir, " restricted to years ", start, " to ", end, "\n"))
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   if(verbose) cat("Loading sample data...")
   dfs = lapply(files_sample, function(file) load_sas(paste0(dir, file), "sample", verbose=verbose-1))
   df = bind_rows(dfs)
   colnames(df) %<>% tolower()
   if(verbose) cat("done.\n")
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   if(verbose) cat("Computing master table (window, type, etc.)...")
   master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", "clinicaln", "clinicalm", "clinicalt")))
   master$start = df$indexdate + start * 365 + 1
   master$end = df$indexdate + end * 365 + 1
   if(verbose) cat("done.\n")
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   if(verbose) cat("Processing demographic variables...")
   df %<>% select(c(.data$id, .data$casecontrol, .data$demo_vars))
@@ -52,7 +64,11 @@ load_process_data = function(
   df %<>% mutate(smoke_former=as.integer(.data$smokestatus==2))
   df %<>% select(-c(.data$smokestatus, .data$ageatindex))
   if(verbose) cat("done.\n")
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   if(verbose) cat("Processing Charlson indicators...\n")
   out = create_charlson_data(dir, files=files_charlson, master=master, verbose=verbose-1)
@@ -61,21 +77,33 @@ load_process_data = function(
   df %<>% left_join(charlson_df, by="id") 
   rm(charlson_df, out); gc()
   if(verbose) cat("...done.\n")
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   if(verbose) cat("Processing medication variables...")
   allmeds_df = create_meds_data(dir, files=files_meds, master=master, verbose=verbose-1)
   df %<>% left_join(allmeds_df, by="id")
   rm(allmeds_df); gc()
   if(verbose) cat("done.\n")
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   if(verbose) cat("Processing lab variables...\n")
   lab_df = create_lab_data(dir, files=files_labs, master=master, verbose=verbose-1)
   df %<>% left_join(lab_df, by="id") 
   rm(lab_df); gc()
   if(verbose) cat("...done.\n")
+<<<<<<< HEAD
   if(verbose) utils::timestamp()
+=======
+  if(verbose) timestamp::timestamp()
+>>>>>>> 52a91af3744f1f954a7a3c8cada0ae828384338d
   
   return(list(df=df, master=master))
 }
