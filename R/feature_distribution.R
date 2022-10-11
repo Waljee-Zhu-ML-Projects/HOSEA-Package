@@ -141,24 +141,24 @@ compare_dfs = function(df_list, ref=names(df_list)[1]){
   df_others = setdiff(names(df_list), c(ref))
   for(var in vars){
     for(dfname in df_others){
-      vtype = fdist %>% filter(variable==var, df==ref) %>% pull("type")
+      vtype = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("type")
       if(vtype == "continuous"){ # t-test
-        m0 = fdist %>% filter(variable==var, df==ref) %>% pull("mean")
-        m1 = fdist %>% filter(variable==var, df==dfname) %>% pull("mean")
-        sd0 = fdist %>% filter(variable==var, df==ref) %>% pull("sd")
-        sd1 = fdist %>% filter(variable==var, df==dfname) %>% pull("sd")
-        n0 = fdist %>% filter(variable==var, df==ref) %>% pull("nc")
-        n1 = fdist %>% filter(variable==var, df==dfname) %>% pull("nc")
+        m0 = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("mean")
+        m1 = fdist %>% filter(variable==!!var, df==!!dfname) %>% pull("mean")
+        sd0 = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("sd")
+        sd1 = fdist %>% filter(variable==!!var, df==!!dfname) %>% pull("sd")
+        n0 = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("nc")
+        n1 = fdist %>% filter(variable==!!var, df==!!dfname) %>% pull("nc")
         sp = sqrt(((n0-1)*sd0^2 + (n1-1)*sd1^2)/(n0+n1-2))
         tstat = abs(m0-m1) / (sp * sqrt(1/n0 + 1/n1))
         pval = 2 * pt(tstat, n0+n1-2, lower.tail=F)
         fdist$pvalue[(fdist$variable==var) & (fdist$df==dfname)] = pval
       }
       if(vtype=="binary"){
-        p0 = fdist %>% filter(variable==var, df==ref) %>% pull("mean")
-        p1 = fdist %>% filter(variable==var, df==dfname) %>% pull("mean")
-        n0 = fdist %>% filter(variable==var, df==ref) %>% pull("nc")
-        n1 = fdist %>% filter(variable==var, df==dfname) %>% pull("nc")
+        p0 = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("mean")
+        p1 = fdist %>% filter(variable==!!var, df==!!dfname) %>% pull("mean")
+        n0 = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("nc")
+        n1 = fdist %>% filter(variable==!!var, df==!!dfname) %>% pull("nc")
         p = (p0*n0 + p1*n1) / (n0+n1)
         se = sqrt(p * (1-p) * (1/n0+1/n1))
         zstat = abs(p0-p1) / se
