@@ -116,3 +116,53 @@ hosmer_lemeshow = function(pred, obs, n, n_cases){
   pval = pchisq(H, dof, lower.tail=F)
   return(paste0("H=", round(H, 2), ", df=", dof, ", p=", round(pval, 3)))
 }
+
+
+
+patch_staging = function(
+  master, 
+  staging=paste0(system.file('extdata', package = 'HOSEA'), "/staging.csv")
+){
+  staging_df = read.csv(staging) %>% tibble::tibble()
+  colnames(staging_df) %<>% tolower()
+  master %<>% left_join(staging_df, 
+                    by=c("stagegroupclinical", "clinicalt", "clinicaln", "clinicalm"))
+  master %<>% mutate(
+    nccn_stage_2017=ifelse(
+      (casecontrol==1) & (nccn_stage_2017==""), 
+      "missing", 
+      nccn_stage_2017
+    ))
+  return(master)
+}
+
+
+prepare_test_set = function(
+  df,
+  raw_df,
+  master,
+  missing_which,
+  outcome,
+  representative,
+  seed
+){
+  if(missing_which == "complete"){
+    ids = complete_for_comparison(raw_df)
+  }
+  if(missing_which == "all"){
+    ids = df %>% pull(id)
+  }
+  if(missing_which == "incomplete"){
+    complete_ids = complete_for_comparison(raw_df)
+    ids = df %>% filter(!(id %in% complete_ids)) %>% pull(id)
+  }
+  # working df
+  imputed_wdf = df %>% filter(id %in% ids)
+  imputed_wdf %<>% patch_outcome(master, outcome=outcome)
+  # representative sample
+  if(representative){
+    set.seed(seed)
+    imputed_wdf %<>% representative_sample()
+  }
+  return(imputed_wdf)
+}
