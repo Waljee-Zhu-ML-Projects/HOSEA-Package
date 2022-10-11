@@ -5,7 +5,7 @@ feature_distribution = function(df){
     summarise(across(
       everything(),
       list(
-        type=~ifelse(n_distinct(., na.rm=T)<3, "binary", "continuous"),
+        vtype=~ifelse(n_distinct(., na.rm=T)<3, "binary", "continuous"),
         n=~length(.),
         nc=~sum(!is.na(.)),
         propna=~mean(is.na(.)),
@@ -115,8 +115,8 @@ feature_coherence = function(df){
       prop_coherent=mean(tf3, na.rm=T)
     )
   }
-  out$type = "coherence"
-  return(out %>% select(category, group, variable, type, everything()))
+  out$vtype = "coherence"
+  return(out %>% select(category, group, variable, vtype, everything()))
 }
 
 
@@ -137,11 +137,11 @@ compare_dfs = function(df_list, ref=names(df_list)[1]){
   coherence %<>% bind_rows(.id="df")
   # conduct tests
   fdist$pvalue = NA
-  vars = unique(fdist %>% filter("type" != "coherence") %>% pull("variable"))
+  variables = unique(fdist %>% filter(vtype != "coherence") %>% pull("variable"))
   df_others = setdiff(names(df_list), c(ref))
-  for(var in vars){
+  for(var in variables){
     for(dfname in df_others){
-      vtype = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("type")
+      vtype = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("vtype")
       if(vtype == "continuous"){ # t-test
         m0 = fdist %>% filter(variable==!!var, df==!!ref) %>% pull("mean")
         m1 = fdist %>% filter(variable==!!var, df==!!dfname) %>% pull("mean")
