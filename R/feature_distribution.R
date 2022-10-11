@@ -141,7 +141,11 @@ compare_dfs = function(df_list, ref=names(df_list)[1]){
   df_others = setdiff(names(df_list), c(ref))
   for(var in vars){
     for(dfname in df_others){
+<<<<<<< HEAD
       vtype = fdist %>% filter(variable==var, df==ref) %>% pull("type")
+=======
+      vtype = fdist %>% filter(variable==var, df==ref) %>% pull(type)
+>>>>>>> dc186f4ac5107d1cf8df95eba3ef268e2554d417
       if(vtype == "continuous"){ # t-test
         m0 = fdist %>% filter(variable==var, df==ref) %>% pull(mean)
         m1 = fdist %>% filter(variable==var, df==dfname) %>% pull(mean)
