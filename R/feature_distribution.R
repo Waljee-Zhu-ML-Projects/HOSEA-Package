@@ -137,12 +137,12 @@ compare_dfs = function(df_list, ref=names(df_list)[1]){
   coherence %<>% bind_rows(.id="df")
   # conduct tests
   fdist$pvalue = NA
-  vars = unique(fdist %>% filter(type != "coherence") %>% pull(variable))
+  vars = unique(fdist %>% filter("type" != "coherence") %>% pull(variable))
   df_others = setdiff(names(df_list), c(ref))
   for(var in vars){
     for(dfname in df_others){
-      type = fdist %>% filter(variable==var, df==ref) %>% pull(type)
-      if(type == "continuous"){ # t-test
+      vtype = fdist %>% filter(variable==var, df==ref) %>% pull("type")
+      if(vtype == "continuous"){ # t-test
         m0 = fdist %>% filter(variable==var, df==ref) %>% pull(mean)
         m1 = fdist %>% filter(variable==var, df==dfname) %>% pull(mean)
         sd0 = fdist %>% filter(variable==var, df==ref) %>% pull(sd)
@@ -154,7 +154,7 @@ compare_dfs = function(df_list, ref=names(df_list)[1]){
         pval = 2 * pt(tstat, n0+n1-2, lower.tail=F)
         fdist$pvalue[(fdist$variable==var) & (fdist$df==dfname)] = pval
       }
-      if(type=="binary"){
+      if(vtype=="binary"){
         p0 = fdist %>% filter(variable==var, df==ref) %>% pull(mean)
         p1 = fdist %>% filter(variable==var, df==dfname) %>% pull(mean)
         n0 = fdist %>% filter(variable==var, df==ref) %>% pull(nc)
