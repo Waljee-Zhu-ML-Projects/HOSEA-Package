@@ -36,7 +36,8 @@ load_process_data = function(
   if(verbose) timestamp()
   
   if(verbose) cat("Computing master table (window, type, etc.)...")
-  master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", "clinicaln", "clinicalm", "clinicalt")))
+  master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", 
+                                  "clinicaln", "clinicalm", "clinicalt", "visitin4yrs")))
   master$start = df$indexdate + start * 365 + 1
   master$end = df$indexdate + end * 365 + 1
   if(verbose) cat("done.\n")
@@ -60,6 +61,18 @@ load_process_data = function(
   charlson_df = out$df
   df %<>% left_join(charlson_df, by="id") 
   rm(charlson_df, out); gc()
+  if(verbose) cat("...done.\n")
+  if(verbose) timestamp()
+  
+  
+  if(verbose) cat("Patching Charlson indicators using visitin4yrs...\n")
+  df %<>% left_join(master %>% select(id, visitin4yrs), by="id")
+  for(charl in charlson_vars){
+    df %<>% mutate(
+      !!charl := ifelse((visitin4yrs==1)&is.na(.data[[charl]]), 0, .data[[charl]])
+    )
+  }
+  df %<>% select(-visitin4yrs)
   if(verbose) cat("...done.\n")
   if(verbose) timestamp()
   
