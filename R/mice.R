@@ -96,7 +96,7 @@ HOSEA.mice.fit = function(
           pred = list()
           pred$fit = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", cluster=cluster)
           pred$logit = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link", cluster=cluster)
-          new_values = (stats::runif(length(pred$fit)) > pred$fit) %>% as.integer()
+          new_values = (stats::runif(length(pred$fit)) < pred$fit) %>% as.integer()
           models[[v]]$fitted = pred$logit
         }else{
           pred = predict(models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin, cluster=cluster)
@@ -188,7 +188,7 @@ impute.HOSEA.mice = function(
           pred = list()
           pred$fit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", cluster=cluster)
           pred$logit = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="link", cluster=cluster)
-          new_values = (runif(length(pred$fit)) > pred$fit) %>% as.integer()
+          new_values = (runif(length(pred$fit)) < pred$fit) %>% as.integer()
           obj$models[[v]]$fitted = pred$logit
         }else{
           pred = mgcv::predict.bam(obj$models[[v]], newdata=wdf %>% dplyr::filter(id %in% to_predict), type="response", se.fit=!bin, cluster=cluster)
