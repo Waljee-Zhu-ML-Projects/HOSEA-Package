@@ -2,6 +2,10 @@
 
 ## Changelog
 
+0.0.0.9009
+
+- Started adding analysis tools
+
 0.0.0.9008:
 
 - New imputation and a few helper functions implemented

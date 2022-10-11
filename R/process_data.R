@@ -36,7 +36,8 @@ load_process_data = function(
   if(verbose) utils::timestamp()
   
   if(verbose) cat("Computing master table (window, type, etc.)...")
-  master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", "clinicaln", "clinicalm", "clinicalt")))
+  master = df %>% select(one_of(c("id", "casecontrol", "cancertype", "stagegroupclinical", 
+                                  "clinicaln", "clinicalm", "clinicalt", "visitin4yrs")))
   master$start = df$indexdate + start * 365 + 1
   master$end = df$indexdate + end * 365 + 1
   if(verbose) cat("done.\n")
@@ -62,6 +63,18 @@ load_process_data = function(
   rm(charlson_df, out); gc()
   if(verbose) cat("...done.\n")
   if(verbose) utils::timestamp()
+  
+  
+  if(verbose) cat("Patching Charlson indicators using visitin4yrs...\n")
+  df %<>% left_join(master %>% select(id, visitin4yrs), by="id")
+  for(charl in charlson_vars){
+    df %<>% mutate(
+      !!charl := ifelse((visitin4yrs==1)&is.na(.data[[charl]]), 0, .data[[charl]])
+    )
+  }
+  df %<>% select(-visitin4yrs)
+  if(verbose) cat("...done.\n")
+  if(verbose) timestamp()
   
   if(verbose) cat("Processing medication variables...")
   allmeds_df = create_meds_data(dir, files=files_meds, master=master, verbose=verbose-1)

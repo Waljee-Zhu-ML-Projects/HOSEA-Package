@@ -15,9 +15,8 @@ lab_vars = c(
   "a1c", "bun", "calc", "chlor", "co2", "creat",
   "gluc", "k", "na", "baso", "eos", "hct", "lymph",
   "mch", "mchc", "mcv", "mono", "mpv", "neut",
-  "platelet", "rbw", "wbc", "crp", "alkphos", 
-  "alt", "ast", "totprot", "hdl", "ldl", "trig", 
-  "chol", "rbc", "hgb" # these three will be dropped at training time
+  "platelet", "wbc", "crp", "alkphos", 
+  "alt", "ast", "totprot", "hdl", "ldl", "trig"
 )
 
 lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
@@ -398,3 +397,39 @@ charlson_icd = function(charl, icd="icd9"){
   #   })
   )[[charl]][[icd]])
 }
+
+
+
+feature_groups = function(model="xgb_mice_any.meta"){
+  # NB: everything is hard coded here, so be careful!
+  filename_model = paste0(system.file('extdata', package = 'HOSEA'), "/", model)
+  xgb_fit = readRDS(filename_model)
+  
+  featuregroups = data.frame(name=xgb_fit$xgb_fit$feature_names)
+  featuregroups$group = c(
+    'gender', 'bmi_weight', 'bmi_weight', 
+    rep("race", 4), 'agentorange', 'age', rep("smoke", 2), 
+    'gerd', 'chf', 'ctd', 'dem', 'diab_c', 'hiv', 'mld', 'msld', 
+    'para', 'rd', 'cd', 'copd', 'diab_nc', 'mi', 'pud', 'pvd', 
+    rep("h2r", 5), rep("ppi", 5), 
+    rep("a1c", 6), rep("bun", 6),  rep("calc", 6),  
+    rep("chlor", 6),  rep("co2", 6),  rep("creat", 6), 
+    rep("gluc", 6), rep("k", 6),  rep("na", 6), 
+    rep("baso", 6),  rep("eos", 6),  rep("hct", 6), 
+    rep("lymph", 6),  rep("mch", 6), 
+    rep("mchc", 6),  rep("mcv", 6),  rep("mono", 6), 
+    rep("mpv", 6),  rep("neut", 6),  rep("platelet", 6), 
+    rep("wbc", 6),  rep("crp", 6), 
+    rep("alkphos", 6),  rep("alt", 6),  rep("ast", 6), 
+    rep("totprot", 6),  rep("hdl", 6), rep("ldl", 6),
+    rep("trig", 6)
+  )
+  featuregroups$category = c( 
+    rep("Demographic", 11),
+    rep("Comorbidities", 16), 
+    rep("Medication", 2*5),
+    rep("Lab", 29*6)
+  )
+  return(featuregroups)
+}
+

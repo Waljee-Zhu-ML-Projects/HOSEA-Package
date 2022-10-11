@@ -15,7 +15,7 @@ patch_outcome = function(df, master, outcome="ANY", drop=F){
     EAC=as.integer(.data$cancertype=="EAC"),
     EGJAC=as.integer(.data$cancertype=="EGJAC")
   )
-  outcomes_ = outcomes%>%select(any_of("id", outcome, "ANY", "EAC", "EGJAC"))
+  outcomes_ = outcomes %>% select(any_of(c("id", outcome, "ANY", "EAC", "EGJAC")))
   df %<>%
     left_join(outcomes_, by="id") %>%
     select(-.data$casecontrol) %>% 
