@@ -237,6 +237,8 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
       tmp %<>% mutate(
         svar = .data$dvar / .data$dlabdate
       )
+      print(tmp %>% pull(dvar))
+      print(tmp %>% pull(dlabdate))
       print(tmp %>% pull(svar))
       # compute summaries
       tmp = tmp %>% group_by(.data$id) %>%
