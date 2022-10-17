@@ -237,6 +237,10 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
       tmp %<>% mutate(
         svar = dvar / dlabdate
       )
+      print(tmp %>% pull(var))
+      print(tmp %>% pull(var_lag))
+      print(tmp %>% pull(labdate))
+      print(tmp %>% pull(labdate_lag))
       print(tmp %>% pull(dvar))
       print(tmp %>% pull(dlabdate))
       print(tmp %>% pull(svar))
