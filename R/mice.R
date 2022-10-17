@@ -38,9 +38,9 @@ HOSEA.mice.fit = function(
   n_rounds=10,
   cluster=NULL
 ){
-  if (!requireNamespace("arm", quietly = TRUE)) {
+  if (!requireNamespace("mgcv", quietly = TRUE)) {
     stop(
-      "Package \"arm\" must be installed to use this function.",
+      "Package \"mgcv\" must be installed to use this function.",
       call. = FALSE
     )
   }
@@ -54,9 +54,24 @@ HOSEA.mice.fit = function(
   bin_vars_to_impute = vars_to_impute[binary]
   
   # impute to start
-  na_mask = is.na(df %>% select(vars_to_impute)) 
-  wdf = HOSEA.srs(df, vars_to_impute, return_models=F)
+  na_mask = is.na(df %>% select(all_of(vars_to_impute))) 
+  out = HOSEA.srs(df, vars_to_impute, return_models=T)
+  wdf = out$imputed_df
+  quantiles = out$models
+  rm(out)
   wdf %<>% arrange(id)
+  
+  cat("[MICE] Z-transform continuous variables\n")
+  for(v in vars_to_impute){
+    bin = v %in% bin_vars_to_impute
+    if(bin) next
+    x = wdf %>% pull(v)
+    q = quantiles$models[[v]]
+    p = apply(outer(x, q, "-")>0, 1, sum) / length(q)
+    p = pmin(pmax(p, 1e-5), 1-1e-5)
+    z = qnorm(p)
+    wdf[[v]] = z
+  }
 
   # iterate through rounds
   prev_coef_mat = matrix(0, nrow=length(vars_to_impute), ncol=length(vars_to_impute))
@@ -131,7 +146,7 @@ HOSEA.mice.fit = function(
     }
   }
   for(m in models) m$fitted = NULL
-  out = list(models=models, n_rounds=r) # TODO: same the initial imputer as well
+  out = list(models=models, n_rounds=r, quantiles=quantiles$models) # TODO: same the initial imputer as well
   class(out) = "HOSEA.mice"
   return(out)
 }
@@ -167,9 +182,20 @@ impute.HOSEA.mice = function(
   dfs %<>% bind_rows()
   
   # impute to start
-  na_mask = is.na(dfs %>% select(obj_cols)) 
+  na_mask = is.na(dfs %>% select(all_of(obj_cols))) 
   wdf = HOSEA.srs(dfs, obj_cols, return_models=F)
   wdf %<>% arrange(id)
+  
+  cat("[MICE] Z-transform continuous variables\n")
+  for(v in obj_cols){
+    bin = obj$models[[v]]$family$link == "logit"
+    if(bin) next
+    x = wdf %>% pull(v)
+    q = obj$quantiles[[v]]
+    p = apply(outer(x, q, "-")>0, 1, sum) / length(q)
+    z = qnorm(p)
+    wdf[[v]] = z
+  }
   
   # iterate through rounds
   for(r in seq(n_rounds)){
@@ -216,6 +242,20 @@ impute.HOSEA.mice = function(
       n = sum(rel_change$n, na.rm=T)
       cat("       Lin. pred. rel. change: ", tss / n, "\n")
     }
+  }
+  
+
+  cat("[MICE] reverse Z-transform continuous variables\n")
+  for(v in obj_cols){
+    bin = obj$models[[v]]$family$link == "logit"
+    if(bin) next
+    z = wdf %>% pull(v)
+    p = pnorm(z)
+    p = pmin(pmax(p, 1e-5), 1-1e-5)
+    q = obj$quantiles[[v]]
+    qp = as.numeric(sub("%", "", names(q))) / 100
+    x = q[apply(outer(p, qp, "-")<0, 1, which.max)]
+    wdf[[v]] = x
   }
   
   
