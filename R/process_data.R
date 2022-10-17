@@ -220,32 +220,32 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
       if(verbose) cat(paste0(type, " "))
       tmp = src_df %>% select(.data$id, .data$labdate, !!type)
       tmp %<>% tidyr::drop_na(!!type)
-      colnames(tmp) = c("id", "labdate", "var")
+      colnames(tmp) = c("id", "labdate", "v")
       # compute lag variables
       tmp %<>% mutate(
         labdate_lag = lag(.data$labdate),
-        var_lag = lag(.data$var),
+        v_lag = lag(.data$v),
         id_lag = lag(.data$id)
       )
       # put NAs for lags of different ids
-      tmp$var_lag[tmp$id!=tmp$id_lag] = NA
+      tmp$v_lag[tmp$id!=tmp$id_lag] = NA
       # compute diff and slope
       tmp %<>% mutate(
         dlabdate = pmax(1, .data$labdate - .data$labdate_lag),
-        dvar = .data$var - .data$var_lag
+        dv = .data$v - .data$v_lag
       )
       tmp %<>% mutate(
-        svar = .data$dvar / .data$dlabdate
+        sv = .data$dv / .data$dlabdate
       )
       # compute summaries
-      tmp = tmp %>% group_by(.data$id) %>%
+      tmp = tmp %>% group_by(id) %>%
         summarize(
-          mean = safe_mean(.data$var),
-          max = safe_max(.data$var),
-          min = safe_min(.data$var),
-          maxdiff = safe_max(.data$svar),
-          mindiff = safe_min(.data$svar),
-          tv = safe_mean(abs(.data$svar)),
+          mean = safe_mean(v),
+          max = safe_max(v),
+          min = safe_min(v),
+          maxdiff = safe_max(sv),
+          mindiff = safe_min(sv),
+          tv = safe_mean(abs(sv)),
         )
       colnames(tmp) = c("id", paste(type, c("mean", "max", "min", "maxdiff", "mindiff", "tv"), sep="_")) 
       
