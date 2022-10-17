@@ -129,7 +129,6 @@ HOSEA.mice.fit = function(
     }
     if(r>1){
       rel_change = sapply(names(models), function(m){
-        bin = m %in% bin_vars_to_impute
         f0 = prev_fitted[[m]]
         f1 = models[[m]]$fitted
         sq_change = (f1-f0)^2
@@ -193,6 +192,7 @@ impute.HOSEA.mice = function(
     x = wdf %>% pull(v)
     q = obj$quantiles[[v]]
     p = apply(outer(x, q, "-")>0, 1, sum) / length(q)
+    p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
   }
@@ -232,7 +232,6 @@ impute.HOSEA.mice = function(
     }
     if(r>1){
       rel_change = sapply(names(obj$models), function(m){
-        bin = obj$models[[v]]$family$link == "logit"
         f0 = prev_fitted[[m]]
         f1 = obj$models[[m]]$fitted
         sq_change = (f1-f0)^2
@@ -256,7 +255,10 @@ impute.HOSEA.mice = function(
     qp = as.numeric(sub("%", "", names(q))) / 100
     x = q[apply(outer(p, qp, "-")<0, 1, which.max)]
     wdf[[v]] = x
+    # with the z transforms, the observed values will be slightly altered, so we replace them back in
+    wdf[[v]][!na_mask[, v]] = df[[v]][!na_mask[, v]]
   }
+  
   
   
   # return
