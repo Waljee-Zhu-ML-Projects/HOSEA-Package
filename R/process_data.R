@@ -237,13 +237,6 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
       tmp %<>% mutate(
         svar = dvar / dlabdate
       )
-      print(tmp %>% pull(var))
-      print(tmp %>% pull(var_lag))
-      print(tmp %>% pull(labdate))
-      print(tmp %>% pull(labdate_lag))
-      print(tmp %>% pull(dvar))
-      print(tmp %>% pull(dlabdate))
-      print(tmp %>% pull(svar))
       # compute summaries
       tmp = tmp %>% group_by(id) %>%
         summarize(
@@ -254,7 +247,6 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
           mindiff = safe_min(svar),
           tv = safe_mean(abs(svar)),
         )
-      print(tmp)
       colnames(tmp) = c("id", paste(type, c("mean", "max", "min", "maxdiff", "mindiff", "tv"), sep="_")) 
       
       dfs[[paste(file, type)]] = tmp
