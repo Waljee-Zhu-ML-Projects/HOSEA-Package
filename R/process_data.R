@@ -224,8 +224,11 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
       # compute lag variables
       tmp %<>% mutate(
         labdate_lag = lag(.data$labdate),
-        var_lag = lag(.data$var)
+        var_lag = lag(.data$var),
+        id_lag = lag(.data$id)
       )
+      # put NAs for lags of different ids
+      tmp$var_lag[tmp$id!=tmp$id_lag] = NA
       # compute diff and slope
       tmp %<>% mutate(
         dlabdate = pmax(1, .data$labdate - .data$labdate_lag),

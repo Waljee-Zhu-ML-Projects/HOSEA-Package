@@ -49,7 +49,7 @@ HOSEA.mice.fit = function(
   
   # find out which are categorical and continuous
   df %<>% arrange(id)
-  binary = df %>% select(vars_to_impute) %>% 
+  binary = df %>% select(all_of(vars_to_impute)) %>% 
     apply(2, function(x) length(unique(x, na.rm=T))) <= 3 
   bin_vars_to_impute = vars_to_impute[binary]
   
@@ -132,7 +132,7 @@ HOSEA.mice.fit = function(
         f0 = prev_fitted[[m]]
         f1 = models[[m]]$fitted
         sq_change = (f1-f0)^2
-        return(c(ss=sum(sq_change), var=stats::var(f0), n=length(f0)))
+        return(c(ss=mean(sq_change), var=stats::var(f0), n=length(f0)))
       }) %>% t() %>% data.frame()
       tss = (rel_change$ss/rel_change$var) %>% sum(na.rm=T)
       n = sum(rel_change$n, na.rm=T)
