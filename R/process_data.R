@@ -210,45 +210,45 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
     colnames(src_df) %<>% tolower()
     subtypes = tail(colnames(src_df), -2)
     # restrict to prediction window
-    src_df %<>% left_join(master %>% select(.data$id, .data$start, .data$end), by="id")
-    src_df %<>% dplyr::filter((.data$labdate>=.data$start)&(.data$labdate<=.data$end))
+    src_df %<>% left_join(master %>% select(id, start, end), by="id")
+    src_df %<>% dplyr::filter((labdate>=start)&(labdate<=end))
     # ensure ordered
-    src_df %<>% arrange(.data$id, .data$labdate)
+    src_df %<>% arrange(id, labdate)
     
     if(verbose) cat("  ")
     for(type in intersect(subtypes, which)){
       if(verbose) cat(paste0(type, " "))
-      tmp = src_df %>% select(.data$id, .data$labdate, !!type)
+      tmp = src_df %>% select(id, labdate, !!type)
       tmp %<>% tidyr::drop_na(!!type)
       colnames(tmp) = c("id", "labdate", "var")
       # compute lag variables
       tmp %<>% mutate(
-        labdate_lag = lag(.data$labdate),
-        var_lag = lag(.data$var),
-        id_lag = lag(.data$id)
+        labdate_lag = lag(labdate),
+        var_lag = lag(var),
+        id_lag = lag(id)
       )
       # put NAs for lags of different ids
       tmp$var_lag[tmp$id!=tmp$id_lag] = NA
       # compute diff and slope
       tmp %<>% mutate(
-        dlabdate = pmax(1, .data$labdate - .data$labdate_lag),
-        dvar = .data$var - .data$var_lag
+        dlabdate = pmax(1, labdate - labdate_lag),
+        dvar = var - var_lag
       )
       tmp %<>% mutate(
-        svar = .data$dvar / .data$dlabdate
+        svar = dvar / dlabdate
       )
       print(tmp %>% pull(dvar))
       print(tmp %>% pull(dlabdate))
       print(tmp %>% pull(svar))
       # compute summaries
-      tmp = tmp %>% group_by(.data$id) %>%
+      tmp = tmp %>% group_by(id) %>%
         summarize(
-          mean = safe_mean(.data$var),
-          max = safe_max(.data$var),
-          min = safe_min(.data$var),
-          maxdiff = safe_max(.data$svar),
-          mindiff = safe_min(.data$svar),
-          tv = safe_mean(abs(.data$svar)),
+          mean = safe_mean(var),
+          max = safe_max(var),
+          min = safe_min(var),
+          maxdiff = safe_max(svar),
+          mindiff = safe_min(svar),
+          tv = safe_mean(abs(svar)),
         )
       print(tmp)
       colnames(tmp) = c("id", paste(type, c("mean", "max", "min", "maxdiff", "mindiff", "tv"), sep="_")) 
