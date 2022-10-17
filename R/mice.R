@@ -78,7 +78,8 @@ HOSEA.mice.fit = function(
         formula=formula(fm),
         data=wdf %>% dplyr::filter(id %in% to_train),
         family=ifelse(bin, binomial(link="logit"), gaussian())[[1]],
-        cluster=cluster, gc.level=1, samfrac=1
+        cluster=cluster, gc.level=1, samfrac=1,
+        coef=models[[v]]$coefficients
       )
       # drop things to save memory
       models[[v]]$residuals = NULL
