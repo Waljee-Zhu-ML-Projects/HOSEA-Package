@@ -223,9 +223,9 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
       colnames(tmp) = c("id", "labdate", "var")
       # compute lag variables
       tmp %<>% mutate(
-        labdate_lag = lag(labdate),
-        var_lag = lag(var),
-        id_lag = lag(id)
+        labdate_lag = dplyr::lag(labdate),
+        var_lag = dplyr::lag(var),
+        id_lag = dplyr::lag(id)
       )
       # put NAs for lags of different ids
       tmp$var_lag[tmp$id!=tmp$id_lag] = NA
