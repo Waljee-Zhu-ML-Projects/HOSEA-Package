@@ -44,7 +44,7 @@ HOSEA.mice.fit = function(
       call. = FALSE
     )
   }
-  models = lapply(vars_to_impute, function(x) NA)
+  models = lapply(vars_to_impute, function(x) list(coefficients=NULL))
   names(models) = vars_to_impute
   
   # find out which are categorical and continuous
