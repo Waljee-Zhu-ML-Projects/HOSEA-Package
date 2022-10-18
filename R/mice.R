@@ -64,7 +64,7 @@ HOSEA.mice.fit = function(
   cat("[MICE] Z-transform continuous variables\n")
   pb = progress::progress_bar$new(
     format="       [:bar] :percent in :elapsed (:current/:total, eta: :eta)",
-    total=length(obj_cols),
+    total=length(vars_to_impute),
     width=60, clear=F
   )
   for(v in vars_to_impute){
