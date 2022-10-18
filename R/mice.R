@@ -67,7 +67,7 @@ HOSEA.mice.fit = function(
     if(bin) next
     x = wdf %>% pull(v)
     q = quantiles$models[[v]]
-    p = apply(outer(x, q, "-")>0, 1, sum) / length(q)
+    p = sapply(x, function(xx) mean(xx>q))
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
@@ -191,7 +191,7 @@ impute.HOSEA.mice = function(
     if(bin) next
     x = wdf %>% pull(v)
     q = obj$quantiles[[v]]
-    p = apply(outer(x, q, "-")>0, 1, sum) / length(q)
+    p = sapply(x, function(xx) mean(xx>q))
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
@@ -253,7 +253,8 @@ impute.HOSEA.mice = function(
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     q = obj$quantiles[[v]]
     qp = as.numeric(sub("%", "", names(q))) / 100
-    x = q[apply(outer(p, qp, "-")<0, 1, which.max)]
+    w = sapply(p, function(pp) which.max(pp<qp))
+    x = q[w]
     wdf[[v]] = x
     # with the z transforms, the observed values will be slightly altered, so we replace them back in
     wdf[[v]][!na_mask[, v]] = df[[v]][!na_mask[, v]]
