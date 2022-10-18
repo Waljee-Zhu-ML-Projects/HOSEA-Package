@@ -62,6 +62,11 @@ HOSEA.mice.fit = function(
   wdf %<>% arrange(id)
   
   cat("[MICE] Z-transform continuous variables\n")
+  pb = progress::progress_bar$new(
+    format="       [:bar] :percent in :elapsed (:current/:total, eta: :eta)",
+    total=length(obj_cols),
+    width=60, clear=F
+  )
   for(v in vars_to_impute){
     bin = v %in% bin_vars_to_impute
     if(bin) next
@@ -71,6 +76,7 @@ HOSEA.mice.fit = function(
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
+    pb$tick()
   }
 
   # iterate through rounds
@@ -186,6 +192,11 @@ impute.HOSEA.mice = function(
   wdf %<>% arrange(id)
   
   cat("[MICE] Z-transform continuous variables\n")
+  pb = progress::progress_bar$new(
+    format="       [:bar] :percent in :elapsed (:current/:total, eta: :eta)",
+    total=length(obj_cols),
+    width=60, clear=F
+  )
   for(v in obj_cols){
     bin = obj$models[[v]]$family$link == "logit"
     if(bin) next
@@ -195,6 +206,7 @@ impute.HOSEA.mice = function(
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
+    pb$tick()
   }
   
   # iterate through rounds
@@ -245,6 +257,11 @@ impute.HOSEA.mice = function(
   
 
   cat("[MICE] reverse Z-transform continuous variables\n")
+  pb = progress::progress_bar$new(
+    format="       [:bar] :percent in :elapsed (:current/:total, eta: :eta)",
+    total=length(obj_cols),
+    width=60, clear=F
+  )
   for(v in obj_cols){
     bin = obj$models[[v]]$family$link == "logit"
     if(bin) next
@@ -258,6 +275,7 @@ impute.HOSEA.mice = function(
     wdf[[v]] = x
     # with the z transforms, the observed values will be slightly altered, so we replace them back in
     wdf[[v]][!na_mask[, v]] = df[[v]][!na_mask[, v]]
+    pb$tick()
   }
   
   
