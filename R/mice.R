@@ -69,15 +69,21 @@ HOSEA.mice.fit = function(
   )
   for(v in vars_to_impute){
     bin = v %in% bin_vars_to_impute
-    if(bin) next
+    if(bin) {pb$tick(); next}
     x = wdf %>% pull(v)
     q = quantiles$models[[v]]
-    p = sapply(x, function(xx) mean(xx>q))
+    if(!is.null(cluster)){
+      parallel::clusterExport(cluster, list("q"))
+      p = parallel::parSapply(cluster, x, function(xx) mean(xx>q))
+    }else{
+      p = sapply(x, function(xx) mean(xx>q))
+    }
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
     pb$tick()
   }
+  cat("\n")
 
   # iterate through rounds
   prev_coef_mat = matrix(0, nrow=length(vars_to_impute), ncol=length(vars_to_impute))
@@ -199,15 +205,21 @@ impute.HOSEA.mice = function(
   )
   for(v in obj_cols){
     bin = obj$models[[v]]$family$link == "logit"
-    if(bin) next
+    if(bin) {pb$tick();next}
     x = wdf %>% pull(v)
     q = obj$quantiles[[v]]
-    p = sapply(x, function(xx) mean(xx>q))
+    if(!is.null(cluster)){
+      parallel::clusterExport(cluster, list("q"))
+      p = parallel::parSapply(cluster, x, function(xx) mean(xx>q))
+    }else{
+      p = sapply(x, function(xx) mean(xx>q))
+    }
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     z = qnorm(p)
     wdf[[v]] = z
     pb$tick()
   }
+  cat("\n")
   
   # iterate through rounds
   for(r in seq(n_rounds)){
@@ -264,19 +276,25 @@ impute.HOSEA.mice = function(
   )
   for(v in obj_cols){
     bin = obj$models[[v]]$family$link == "logit"
-    if(bin) next
+    if(bin) {pb$tick(); next}
     z = wdf %>% pull(v)
     p = pnorm(z)
     p = pmin(pmax(p, 1e-5), 1-1e-5)
     q = obj$quantiles[[v]]
     qp = as.numeric(sub("%", "", names(q))) / 100
-    w = sapply(p, function(pp) which.max(pp<qp))
+    if(!is.null(cluster)){
+      parallel::clusterExport(cluster, list("qp"))
+      w = parallel::parSapply(cluster, p, function(pp) which.max(pp<qp))
+    }else{
+      w = sapply(p, function(pp) which.max(pp<qp))
+    }
     x = q[w]
     wdf[[v]] = x
     # with the z transforms, the observed values will be slightly altered, so we replace them back in
     wdf[[v]][!na_mask[, v]] = df[[v]][!na_mask[, v]]
     pb$tick()
   }
+  cat("\n")
   
   
   
