@@ -2,9 +2,13 @@
 
 ## Changelog
 
+0.0.0.9010
+
+- MICE imputation and new models
+
 0.0.0.9009
 
-- Started adding analysis tools
+- A few new analysis tools
 
 0.0.0.9008:
 
