@@ -4,7 +4,10 @@
 
 0.0.0.9010
 
-- MICE imputation and new models
+- Added Z transform to MICE
+- Fixed MICE binary imputation
+- New MICE imputer and new models
+- Now, the package contains all the necessary for MICE or SRS imputation + prediction
 
 0.0.0.9009
 
@@ -89,22 +92,6 @@ A few remarks:
 - `verbose` specifies the amount of logging pushed to the console (0-3)
 - `out` is a list with entries `df` which is the dataframe for prediction and `master` which contains some metadata
 
-## Quality control
-
-<div class="alert alert-warning"> QC is unavailable for now. </div>
-
-There are a few simple checks to see if the processed data matches the training data:
-
-```r
-quality_control(out$df)
-```
-
-Currently, this checks for:
-
-- whether we have the correct columns
-- if there are outliers
-- if the missing proportion are similar
-
 ## Risk prediction
 
 The second important function of this package is `predict.HOSEA` which can perform multiple imputation and average the predicted risk
@@ -130,7 +117,8 @@ models = load_models(files_meta=c(ANY="xgb_mice_any.meta"), files_models=c(ANY="
 pred = predict.HOSEA(out$df, models=models)
 ```
 
-You can also use multiprocessing to speed-up the imputation:
+You can also use multiprocessing to speed-up the imputation (I am not convinced this is faster
+because of communication time):
 
 ```r
 n_cores = 10
@@ -155,7 +143,7 @@ export NO_PROXY=$no_proxy
 ## Notes on updating a model
 
 <div class="alert alert-warning"> The following is no longer accurate. The current workflow is to simply replace the 
-appropriate files in `inst/extdata/`. </div>
+appropriate files in `inst/extdata/`. Make sure fine names match with `load_imputer` and `load_models`. </div>
 
 Here is the current process (these are mostly notes for myself):
 
