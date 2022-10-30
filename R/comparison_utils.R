@@ -1,3 +1,9 @@
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 complete_for_comparison = function(df){
   complete_cases = !(
     is.na(df$gender) |
@@ -12,6 +18,12 @@ complete_for_comparison = function(df){
   return(df %>% filter(complete_cases) %>% pull(id))
 }
 
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 compute_columns_for_comparison = function(df){
   df %<>% mutate(
     age = pmax(20, pmin(90, age)),
@@ -37,6 +49,12 @@ compute_columns_for_comparison = function(df){
   )))
 }
 
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 kunzmann_score = function(df){
   score = 0
   score = score + (df$k_age_bin == "(55,60]") * 1.5
@@ -52,6 +70,12 @@ kunzmann_score = function(df){
   return(data.frame(id=df$id, Kunzmann=score))
 }
 
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 hunt_score = function(df){
   score = 3.6
   score = score * ifelse(df$gender, 1.9, 1.)
@@ -64,6 +88,12 @@ hunt_score = function(df){
   return(data.frame(id=df$id, HUNT=score/100000))
 }
 
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 guidelines = function(df){
   scores = df %>% mutate( 
     ACG2016     = as.integer(gender & gerd & ( ((age>=50) + (white) + (bmi>30) + (smoke_ever) ) > 1)),

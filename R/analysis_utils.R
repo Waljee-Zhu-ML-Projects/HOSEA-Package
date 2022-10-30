@@ -34,6 +34,14 @@ roc = function(proba){
   return(out)
 }
 
+#' Title
+#'
+#' @param df 
+#' @param ratio_male_to_female 
+#' @param ratio_cases_male_to_female 
+#'
+#' @return
+#' @export
 representative_sample = function(df, ratio_male_to_female=1.0, ratio_cases_male_to_female=8.33){
   # this function assumes we have too few female cases and controls
   
@@ -61,6 +69,14 @@ representative_sample = function(df, ratio_male_to_female=1.0, ratio_cases_male_
 }
 
 
+#' Title
+#'
+#' @param proba 
+#' @param y 
+#' @param nbins 
+#'
+#' @return
+#' @export
 calibration_curve = function(proba, y, nbins=50){
   bins = c(0., quantile(proba, seq(0., 1., length.out=nbins+1))+1e-6)
   L = bins[-length(bins)]; U = bins[-1]
@@ -77,6 +93,14 @@ calibration_curve = function(proba, y, nbins=50){
 }
 
 
+#' Title
+#'
+#' @param pred 
+#' @param y 
+#' @param threshold 
+#'
+#' @return
+#' @export
 classification_metrics = function(pred, y, threshold=NULL){
   if(is.null(threshold)) threshold = c(
     seq(0, 200, 5),
@@ -105,6 +129,15 @@ classification_metrics = function(pred, y, threshold=NULL){
 }
 
 
+#' Title
+#'
+#' @param pred 
+#' @param obs 
+#' @param n 
+#' @param n_cases 
+#'
+#' @return
+#' @export
 hosmer_lemeshow = function(pred, obs, n, n_cases){
   nbins = length(pred)
   o1 = n_cases
@@ -119,6 +152,13 @@ hosmer_lemeshow = function(pred, obs, n, n_cases){
 
 
 
+#' Title
+#'
+#' @param master 
+#' @param staging 
+#'
+#' @return
+#' @export
 patch_staging = function(
   master, 
   staging=paste0(system.file('extdata', package = 'HOSEA'), "/staging.csv")
@@ -137,6 +177,18 @@ patch_staging = function(
 }
 
 
+#' Title
+#'
+#' @param df 
+#' @param raw_df 
+#' @param master 
+#' @param missing_which 
+#' @param outcome 
+#' @param representative 
+#' @param seed 
+#'
+#' @return
+#' @export
 prepare_test_set = function(
   df,
   raw_df,

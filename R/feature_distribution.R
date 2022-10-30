@@ -1,5 +1,11 @@
 
 
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 feature_distribution = function(df){
   out = df %>% select(-id, -casecontrol) %>% 
     summarise(across(
@@ -30,6 +36,12 @@ feature_distribution = function(df){
 }
 
 
+#' Title
+#'
+#' @param df 
+#'
+#' @return
+#' @export
 feature_coherence = function(df){
   # empty df to store result
   out = tibble::tibble(
@@ -129,7 +141,13 @@ mask_observed = function(df, idf){
 }
 
 
-# df_list=list(raw=df, imputed=idf, only_imputed=ddf)
+#' Title
+#'
+#' @param df_list 
+#' @param ref 
+#'
+#' @return
+#' @export
 compare_dfs = function(df_list, ref=names(df_list)[1]){
   fdist = lapply(df_list, feature_distribution)
   fdist %<>% bind_rows(.id="df")

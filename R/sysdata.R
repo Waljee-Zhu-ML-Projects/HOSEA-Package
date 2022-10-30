@@ -400,6 +400,12 @@ charlson_icd = function(charl, icd="icd9"){
 
 
 
+#' Title
+#'
+#' @param model 
+#'
+#' @return
+#' @export
 feature_groups = function(model="xgb_mice_any.meta"){
   # NB: everything is hard coded here, so be careful!
   filename_model = paste0(system.file('extdata', package = 'HOSEA'), "/", model)
