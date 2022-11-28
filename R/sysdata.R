@@ -23,7 +23,7 @@ lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
 
 med_vars = c("h2r", "ppi")
 
-med_summaries = c("int", "mean", "max", "maxdiff", "mindiff")
+med_summaries = c("int", "mean", "max", "maxdiff", "tv")
 
 charlson_icd = function(charl, icd="icd9"){
   return(list(
