@@ -8,7 +8,6 @@
 - Fixed MICE binary imputation
 - New MICE imputer and new models
 - Now, the package contains all the necessary for MICE or SRS imputation + prediction
-- SRS is now default
 
 0.0.0.9009
 

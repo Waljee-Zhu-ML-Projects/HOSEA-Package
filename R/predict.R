@@ -11,7 +11,7 @@
 #'
 #' @examples
 load_imputer = function(
-  file="srs.imputer"
+  file="mice.imputer"
 ){
   filename = paste0(system.file('extdata', package = 'HOSEA'), "/", file)
   imputer = readRDS(filename)
@@ -29,8 +29,8 @@ load_imputer = function(
 #'
 #' @examples
 load_models = function(
-  files_meta=list(ANY="xgb_srs_any.meta", EAC="xgb_srs_eac.meta", EGJAC="xgb_srs_egjac.meta"),
-  files_models=list(ANY="xgb_srs_any.model", EAC="xgb_srs_eac.model", EGJAC="xgb_srs_egjac.model")
+  files_meta=list(ANY="xgb_mice_any.meta", EAC="xgb_mice_eac.meta", EGJAC="xgb_mice_egjac.meta"),
+  files_models=list(ANY="xgb_mice_any.model", EAC="xgb_mice_eac.model", EGJAC="xgb_mice_egjac.model")
 ){
   models = intersect(names(files_meta), names(files_models)) # only models with both will be used
   out = lapply(models, function(name){
