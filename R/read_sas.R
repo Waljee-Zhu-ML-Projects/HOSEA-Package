@@ -12,6 +12,7 @@ load_sas = function(filepath, filename, verbose=T, ...){
   # path column names
   try(df%<>%rename(id=.data$id_V2))
   # sort
+  colnames(df) %<>% to_lower()
   df = switch(filename,
               sample=df %>% arrange(.data$id, NA),
               labs=df %>% arrange(.data$id, .data$labdate),
