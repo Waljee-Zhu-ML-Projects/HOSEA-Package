@@ -83,21 +83,6 @@ load_process_data = function(
   if(verbose) cat("done.\n")
   if(verbose) utils::timestamp()
   
-  
-  if(verbose) cat("Patching medication using visitin4yrs...\n")
-  df %<>% left_join(master %>% select(id, visitin4yrs), by="id")
-  for(med in med_vars){
-    for(med_summary in med_summaries){
-      var = paste0(med, "_", med_summary)
-      df %<>% mutate(
-        !!var := ifelse((visitin4yrs==1)&is.na(.data[[var]]), 0, .data[[var]])
-      )
-    }
-  }
-  df %<>% select(-visitin4yrs)
-  if(verbose) cat("...done.\n")
-  if(verbose) timestamp()
-  
   if(verbose) cat("Processing lab variables...\n")
   lab_df = create_lab_data(dir, files=files_labs, master=master, verbose=verbose-1)
   df %<>% left_join(lab_df, by="id") 
