@@ -1,3 +1,19 @@
+#' Read a SAS file and perform some minor pre-processing
+#' 
+#' When loading a SAS file, a RDS copy is made for future faster loading. If a RDS
+#' file already exists with the same name, then this file is loaded instead.
+#'
+#' @param filepath Path to the file to read
+#' @param filename Name of the file
+#' @param verbose How much to print
+#' @param ... Arguments to pass to read_sas
+#'
+#' @return the loaded data frame
+#' @export
+#' @import dplyr
+#' @importFrom magrittr %<>%
+#' @importFrom haven read_sas
+#' @importFrom stringr str_replace_all
 load_sas = function(filepath, filename, verbose=T, ...){
   rdspath = stringr::str_replace_all(filepath, "sas7bdat", "rds")
   # first check if in rds format, which is much faster to load
@@ -18,7 +34,7 @@ load_sas = function(filepath, filename, verbose=T, ...){
               labs=df %>% arrange(.data$id, .data$labdate),
               meds=df %>% arrange(.data$id, .data$filldate),
               charlson=df %>% arrange(.data$id, .data$dxdate),
-              df # no match, e.e.g cancertype
+              df # no match
   )
   saveRDS(df, rdspath)
   if(verbose) cat(paste("  Saved to RDS format:", rdspath), fill=T)

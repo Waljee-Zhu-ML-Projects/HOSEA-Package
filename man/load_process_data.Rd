@@ -42,7 +42,7 @@ load_process_data(
 \item{icd9enddate}{index of end of icd9 coding}
 }
 \value{
-a data frame (df) containing all required for fitting and/or prediction and a data frame (master) contaiing some metadata
+a list containing: a data frame (df) containing all required for fitting and/or prediction and a data frame (master) containing some metadata
 }
 \description{
 Processing raw data to final format

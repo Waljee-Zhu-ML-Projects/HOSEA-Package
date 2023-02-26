@@ -1,20 +1,23 @@
 #' Processing raw data to final format
 #'
 #' @param dir directory containing all files
-#' @param start starting year relative to index (default: -4)
-#' @param end ending year relative to index (default: -0)
 #' @param files_sample list of files containing demographic data
 #' @param files_charlson list of files containing icd codes
 #' @param files_labs list of files containing lab results
 #' @param files_meds list of files containing medication
+#' @param start starting year relative to index (default: -4)
+#' @param end ending year relative to index (default: -0)
 #' @param verbose how much to print: 0=none, 1=some, 2=most, 3=all (default)
 #' @param icd which icd codes to use (default: "any")
 #' @param icd10startdate index of beginning of icd10 coding
 #' @param icd9enddate index of end of icd9 coding
 #'
-#' @return a data frame (df) containing all required for fitting and/or prediction and a data frame (master) contaiing some metadata
+#' @return a list containing: a data frame (df) containing all required for fitting and/or prediction and a data frame (master) containing some metadata
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr 
+#' @importFrom rlang :=
+#' @importFrom magrittr %<>%
+#' @importFrom utils timestamp tail
 load_process_data = function(
   dir="unzipped_data/",
   files_sample=c("sample.sas7bdat"),
@@ -66,15 +69,15 @@ load_process_data = function(
   
   
   if(verbose) cat("Patching Charlson indicators using visitin4yrs...\n")
-  df %<>% left_join(master %>% select(id, visitin4yrs), by="id")
+  df %<>% left_join(master %>% select(id, .data$visitin4yrs), by="id")
   for(charl in charlson_vars){
     df %<>% mutate(
-      !!charl := ifelse((visitin4yrs==1)&is.na(.data[[charl]]), 0, .data[[charl]])
+      !!charl := ifelse((.data$visitin4yrs==1)&is.na(.data[[charl]]), 0, .data[[charl]])
     )
   }
-  df %<>% select(-visitin4yrs)
+  df %<>% select(-.data$visitin4yrs)
   if(verbose) cat("...done.\n")
-  if(verbose) timestamp()
+  if(verbose) utils::timestamp()
   
   if(verbose) cat("Processing medication variables...")
   allmeds_df = create_meds_data(dir, files=files_meds, master=master, verbose=verbose-1)
@@ -93,6 +96,25 @@ load_process_data = function(
   return(list(df=df, master=master))
 }
 
+#' Process ICD files to construct patient records
+#' 
+#' If the patient has at least one ICD 9/10 hit for a particular comorbidity
+#' between `start` and `end` in `master`, then the corresponding variables in the
+#' output will contain a 1.
+#' 
+#' If the patient has no ICD codes at all, then Nas will be implicitly added.
+#' Note that `visitin4yrs` is later used to impute 0 for some of these cases.
+#'
+#' @param dir Directory
+#' @param files List of files to search through
+#' @param which List of comorbidities to consider
+#' @param master Data frame containing (id, start, end, ...)
+#' @param verbose Whether to print things out or not
+#'
+#' @return A list of (df, master) where:
+#' * df has column (id, <all comorbidities in `which`>)
+#' * master is the input master
+#' @export
 create_charlson_data = function(dir="./unzipped_data/", files=c("alldxs.sas7bdat"), 
                                 which=charlson_vars, master=NULL, verbose=T){
 
@@ -208,44 +230,44 @@ create_lab_data = function(dir="./unzipped_data/", files=c("alllabs.sas7bdat"),
     
     src_df = load_sas(paste0(dir, file), "labs", verbose=verbose-1)
     colnames(src_df) %<>% tolower()
-    subtypes = tail(colnames(src_df), -2)
+    subtypes = utils::tail(colnames(src_df), -2)
     # restrict to prediction window
-    src_df %<>% left_join(master %>% select(id, start, end), by="id")
-    src_df %<>% dplyr::filter((labdate>=start)&(labdate<=end))
+    src_df %<>% left_join(master %>% select(c("id", "start", "end")), by="id")
+    src_df %<>% dplyr::filter((.data$labdate>=.data$start)&(.data$labdate<=.data$end))
     # ensure ordered
-    src_df %<>% arrange(id, labdate)
+    src_df %<>% arrange(.data$id, .data$labdate)
     
     if(verbose) cat("  ")
     for(type in intersect(subtypes, which)){
       if(verbose) cat(paste0(type, " "))
-      tmp = src_df %>% select(id, labdate, !!type)
+      tmp = src_df %>% select(c("id", "labdate", type))
       tmp %<>% tidyr::drop_na(!!type)
       colnames(tmp) = c("id", "labdate", "var")
       # compute lag variables
       tmp %<>% mutate(
-        labdate_lag = dplyr::lag(labdate),
-        var_lag = dplyr::lag(var),
-        id_lag = dplyr::lag(id)
+        labdate_lag = dplyr::lag(.data$labdate),
+        var_lag = dplyr::lag(.data$var),
+        id_lag = dplyr::lag(.data$id)
       )
       # put NAs for lags of different ids
       tmp$var_lag[tmp$id!=tmp$id_lag] = NA
       # compute diff and slope
       tmp %<>% mutate(
-        dlabdate = pmax(1, labdate - labdate_lag),
-        dvar = var - var_lag
+        dlabdate = pmax(1, .data$labdate - .data$labdate_lag),
+        dvar = .data$var - .data$var_lag
       )
       tmp %<>% mutate(
-        svar = dvar / dlabdate
+        svar = .data$dvar / .data$dlabdate
       )
       # compute summaries
-      tmp = tmp %>% group_by(id) %>%
+      tmp = tmp %>% group_by(.data$id) %>%
         summarize(
-          mean = safe_mean(var),
-          max = safe_max(var),
-          min = safe_min(var),
-          maxdiff = safe_max(svar),
-          mindiff = safe_min(svar),
-          tv = safe_mean(abs(svar)),
+          mean = safe_mean(.data$var),
+          max = safe_max(.data$var),
+          min = safe_min(.data$var),
+          maxdiff = safe_max(.data$svar),
+          mindiff = safe_min(.data$svar),
+          tv = safe_mean(abs(.data$svar)),
         )
       colnames(tmp) = c("id", paste(type, c("mean", "max", "min", "maxdiff", "mindiff", "tv"), sep="_")) 
       

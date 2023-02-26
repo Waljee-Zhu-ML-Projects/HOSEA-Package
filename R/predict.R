@@ -1,7 +1,3 @@
-
-
-
-
 #' Title
 #'
 #' @param file 
@@ -28,9 +24,10 @@ load_imputer = function(
 #' @export
 #'
 #' @examples
+#' @importFrom xgboost xgb.load
 load_models = function(
-  files_meta=list(ANY="xgb_srs_any.meta", EAC="xgb_srs_eac.meta", EGJAC="xgb_srs_egjac.meta"),
-  files_models=list(ANY="xgb_srs_any.model", EAC="xgb_srs_eac.model", EGJAC="xgb_srs_egjac.model")
+  files_meta=list(ANY="xgb_srs_any.meta", EAC="xgb_srs_eac.meta", GCA="xgb_srs_egjac.meta"),
+  files_models=list(ANY="xgb_srs_any.model", EAC="xgb_srs_eac.model", GCA="xgb_srs_egjac.model")
 ){
   models = intersect(names(files_meta), names(files_models)) # only models with both will be used
   out = lapply(models, function(name){
@@ -51,11 +48,16 @@ load_models = function(
 #' @param models a list of models to obtain predictions
 #' @param imputer an imputation object from HOSEA, NULL to perform no imputation
 #' @param newdata data frame to predict, which may contain missing data to be imputed
-#' @param n_samples 
+#' @param n_samples number of imputes to aggregate over
+#' @param cluster a cluster object for parallel processing
 #'
 #' @return predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).
-#' @export predict.HOSEA
-#' @import dplyr magrittr xgboost purrr
+#' @evalNamespace "export(predict.HOSEA)"
+#' @import dplyr 
+#' @importFrom purrr reduce
+#' @importFrom magrittr %<>%
+#' @importFrom xgboost xgb.load xgb.DMatrix
+#' @importFrom stats predict
 predict.HOSEA = function(
   newdata,
   models=load_models(), 

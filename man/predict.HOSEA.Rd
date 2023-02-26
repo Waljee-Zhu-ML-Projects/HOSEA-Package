@@ -19,7 +19,9 @@
 
 \item{imputer}{an imputation object from HOSEA, NULL to perform no imputation}
 
-\item{n_samples}{}
+\item{n_samples}{number of imputes to aggregate over}
+
+\item{cluster}{a cluster object for parallel processing}
 }
 \value{
 predicted risk averaged over the n imputations. A data frame with columns (id, ANY, EAC, EGJAC).

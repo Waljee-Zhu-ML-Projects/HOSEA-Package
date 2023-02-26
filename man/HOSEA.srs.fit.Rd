@@ -2,20 +2,23 @@
 % Please edit documentation in R/srs.R
 \name{HOSEA.srs.fit}
 \alias{HOSEA.srs.fit}
-\title{Title}
+\title{Fitting Simple Random Sampling Imputation}
 \usage{
 HOSEA.srs.fit(df, vars_to_impute, n_quantiles = 10000)
 }
 \arguments{
-\item{df}{}
+\item{df}{The data frame to impute}
 
-\item{vars_to_impute}{}
+\item{vars_to_impute}{The list of variables to perform imputation on}
 
-\item{n_quantiles}{}
+\item{n_quantiles}{The number of quantiles used to reduce memory}
 }
 \value{
-the list of models
+A list
 }
 \description{
-Title
+Fitting Simple Random Sampling Imputation
+}
+\seealso{
+\link{HOSEA.srs} \link{impute.HOSEA.srs}
 }

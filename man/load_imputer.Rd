@@ -4,7 +4,7 @@
 \alias{load_imputer}
 \title{Title}
 \usage{
-load_imputer(file = "mice.imputer")
+load_imputer(file = "srs.imputer")
 }
 \arguments{
 \item{file}{}

@@ -1,13 +1,16 @@
-#' Title
+#' Simple Random Sampling Imputation
 #'
-#' @param df 
-#' @param vars_to_impute 
-#' @param n_quantiles 
-#' @param n_samples 
-#' @param return_models 
+#' @param df The data frame to impute
+#' @param vars_to_impute The list of variables to perform imputation on
+#' @param n_quantiles The number of quantiles used to reduce memory
+#' @param n_samples Number of imputes requested
+#' @param return_models Whether to return the quantiles or not 
 #'
-#' @return either the imputed df or a list of the df and the models
+#' @return If `return_model==T`, then this returns a list (imputed_df, models). See [HOSEA.srs.fit] for details.
+#' Otherwise, only `imputed_df` is returned which is either a single data frame (`n_samples==1`)
+#' or a list of data frames (`n_samples>1`).
 #' @export HOSEA.srs
+#' @seealso [HOSEA.srs.fit] [impute.HOSEA.srs]
 HOSEA.srs = function(
   df,
   vars_to_impute,
@@ -20,14 +23,16 @@ HOSEA.srs = function(
   if(return_models) return(list(imputed_df = imputed, models=obj)) else return(imputed)
 }
 
-#' Title
+#' Fitting Simple Random Sampling Imputation
 #'
-#' @param df 
-#' @param vars_to_impute 
-#' @param n_quantiles 
+#' @param df The data frame to impute
+#' @param vars_to_impute The list of variables to perform imputation on
+#' @param n_quantiles The number of quantiles used to reduce memory
 #'
-#' @return the list of models
+#' @return A list
 #' @export HOSEA.srs.fit
+#' @importFrom stats quantile
+#' @seealso [HOSEA.srs] [impute.HOSEA.srs]
 HOSEA.srs.fit = function(
   df, 
   vars_to_impute,
@@ -35,7 +40,7 @@ HOSEA.srs.fit = function(
 ){
   probs = seq(0, n_quantiles) / n_quantiles
   models = lapply(vars_to_impute, function(v){
-    quantile(df %>% pull(v), probs=probs, na.rm=T, type=1)
+    stats::quantile(df %>% pull(v), probs=probs, na.rm=T, type=1)
   })
   names(models) = vars_to_impute
   out = list(models=models)
@@ -43,16 +48,17 @@ HOSEA.srs.fit = function(
   return(out)
 }
 
-#' Title
+#' Impute using Simple Random Sampling from a fitted SRS imputer
 #'
-#' @param obj 
-#' @param df 
-#' @param n_samples 
-#' @param ... 
+#' @param obj The SRS imputer
+#' @param df The data frame to impute
+#' @param n_samples the number of imputes to output
+#' @param ... For compatibility with [impute]
 #'
 #' @return a df or a list of dfs
 #' @export impute.HOSEA.srs
 #' @exportS3Method impute HOSEA.srs
+#' @seealso [HOSEA.srs] [HOSEA.srs.fit] [impute]
 impute.HOSEA.srs = function(
   obj, 
   df, 

@@ -1,9 +1,13 @@
+# This file contains various variables required for some functions
+
+# The list of demographic variables
 demo_vars = c(
   'ageatindex','gender','bmi','weight',
   'asian','black','hawaiianpacific','indianalaskan',
   'smokestatus','agentorange'
 )
 
+# The list of comorbidities
 charlson_vars = c(
   "gerd",     "chf",      "ctd",      "dem",      "diab_c",      
   "hiv",      "mld",      "msld",     "para",     "rd",       
@@ -11,6 +15,7 @@ charlson_vars = c(
   "pvd"
 )
 
+# The list of lab result variables
 lab_vars = c(
   "a1c", "bun", "calc", "chlor", "co2", "creat",
   "gluc", "k", "na", "baso", "eos", "hct", "lymph",
@@ -19,12 +24,16 @@ lab_vars = c(
   "alt", "ast", "totprot", "hdl", "ldl", "trig"
 )
 
+# The list of variables summaries for lab results
 lab_summaries = c("mean", "max", "min", "maxdiff", "mindiff", "tv")
 
+# The list of medication variables
 med_vars = c("h2r", "ppi")
 
+# The list of variable summaries for medication
 med_summaries = c("int", "mean", "max", "maxdiff", "tv")
 
+# Dictionary of ICD 9/10 codes for each comorbidities
 charlson_icd = function(charl, icd="icd9"){
   return(list(
   'gerd'=list(
@@ -349,7 +358,7 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,5)=='437.3',
                       substr(s,1,4)=='440.',
                       substr(s,1,4)=='441.',
-                      substr(s,1,5)=='443.1.',
+                      substr(s,1,5)=='443.1',
                       substr(s,1,5)=='443.2',
                       substr(s,1,5)=='443.8',
                       substr(s,1,5)=='443.9',
@@ -373,41 +382,20 @@ charlson_icd = function(charl, icd="icd9"){
                       substr(s,1,3)=='I70',
                       substr(s,1,3)=='I71'))
     })
-  # 'be'=list(
-  #   'icd9'=function(s){
-  #     as.integer(pmax(substr(s,1,6)=='530.85'))
-  #   },
-  #   'icd10'=function(s){
-  #     as.integer(pmax(substr(s,1,5)=='K22.70',
-  #                     substr(s,1,5)=='K22.71'))
-  #   }),
-  # 'hh'=list(
-  #   'icd9'=function(s){
-  #     as.integer(pmax(substr(s,1,5)=='750.6'))
-  #   },
-  #   'icd10'=function(s){
-  #     as.integer(pmax(substr(s,1,5)=='Q40.1'))
-  #   }),
-  # 'estrict'=list(
-  #   'icd9'=function(s){
-  #     as.integer(pmax(substr(s,1,5)=='530.3'))
-  #   },
-  #   'icd10'=function(s){
-  #     as.integer(pmax(substr(s,1,5)=='K22.2'))
-  #   })
   )[[charl]][[icd]])
 }
 
 
 
-#' Title
+#' Feature groups and categories
+#' 
+#' This is completely hard-coded to fit with the current model, so be careful when using this.
 #'
-#' @param model 
+#' @param model The model path (relative to `<HOSEA package path>/extdata`) from which to get feature names
 #'
-#' @return
+#' @return A data frame with three columns (name, group, category)
 #' @export
-feature_groups = function(model="xgb_mice_any.meta"){
-  # NB: everything is hard coded here, so be careful!
+feature_groups = function(model="xgb_srs_any.meta"){
   filename_model = paste0(system.file('extdata', package = 'HOSEA'), "/", model)
   xgb_fit = readRDS(filename_model)
   

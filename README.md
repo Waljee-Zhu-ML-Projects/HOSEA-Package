@@ -1,6 +1,11 @@
-# HOSEA Package
+# HOSEA Package: K-ECAN Prediction Tool & Analyses Utilities
 
 ## Changelog
+
+1.0.0.0000
+
+- Removed MICE and other unnecessary files and functions
+- Minor clean-up here and there
 
 0.0.0.9010
 
@@ -69,7 +74,7 @@ I had trouble installing it directly through `devtools` on the UM cluster becaus
 
 ## Data processing
 
-The first function to use is `load_process_data` which will load raw data and proces it into
+The first function to use is `load_process_data` which will load raw data and process it into
 the appropriate format for prediction
 
 ```r
@@ -142,30 +147,5 @@ export NO_PROXY=$no_proxy
 
 ## Notes on updating a model
 
-<div class="alert alert-warning"> The following is no longer accurate. The current workflow is to simply replace the 
-appropriate files in `inst/extdata/`. Make sure fine names match with `load_imputer` and `load_models`. </div>
-
-Here is the current process (these are mostly notes for myself):
-
-- I usually save a memory snapshot of the model to .rds format which is not compatible with other xgboost versions
-- The reason is that I need to save the quantiles as well for imputation, and the `xgboost::xgb.save` function does not allow to save more
-- Then, I read it into R and add it to the loaded data:
-
-```r
-package_dir = "./"
-XGB_ANY <- readRDS(paste0(package_dir, "data/XGB_all_ANY.rds"))
-XGB_EAC <- readRDS(paste0(package_dir, "data/XGB_all_EAC.rds"))
-XGB_EGJAC <- readRDS(paste0(package_dir, "data/XGB_all_EGJAC.rds"))
-usethis::use_data(XGB_ANY, XGB_EAC, XGB_EGJAC, overwrite=T)
-```
-
-- Then, I also need to save the JSON files for compatibility
-
-```r
-xgboost::xgb.save(XGB_ANY$xgb_fit, paste0(package_dir, "inst/extdata/xgb_any.model"))
-xgboost::xgb.save(XGB_EAC$xgb_fit, paste0(package_dir, "inst/extdata/xgb_eac.model"))
-xgboost::xgb.save(XGB_EGJAC$xgb_fit, paste0(package_dir, "inst/extdata/xgb_egjac.model"))
-```
-
-- Document, rebuild and push!
-
+ The current workflow is to simply replace the 
+appropriate files in `inst/extdata/`. Make sure fine names match with `load_imputer` and `load_models`.

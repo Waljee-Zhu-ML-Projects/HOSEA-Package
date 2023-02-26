@@ -1,17 +1,17 @@
 Package: HOSEA
 Title: Harnessing Opportunities to Screen for Esophageal Adenocarcinoma
-Version: 0.0.0.9010
+Version: 1.0.0.0000
 Authors@R: 
     person("Simon", "Fontaine", email="simfont@umich.edu", role = c("aut", "cre"))
-Description: This packages processes raw data from EHR into the appropriate format for risk prediction from a XGBoost model.
-License: file LICENSE
+Description: This packages processes raw data from EHR into the appropriate format for risk prediction from an XGBoost model. Some utility functions are also included to help with downstream analyses.
+License: GPL-2
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 Depends: 
-    R (>= 2.10)
+    R (>= 4.0)
 Imports: 
-    stats, dplyr, magrittr, haven, stringr, purrr, xgboost, progress, methods, tidyr, tibble
+    dplyr, magrittr, haven, stringr, purrr, xgboost, tidyr, tibble, stats, utils, rlang
 Suggests:
-    mgcv, parallel, pROC, PRROC
+    pROC, PRROC
 LazyData: true

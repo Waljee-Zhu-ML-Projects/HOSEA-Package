@@ -2,7 +2,7 @@
 % Please edit documentation in R/srs.R
 \name{HOSEA.srs}
 \alias{HOSEA.srs}
-\title{Title}
+\title{Simple Random Sampling Imputation}
 \usage{
 HOSEA.srs(
   df,
@@ -13,19 +13,24 @@ HOSEA.srs(
 )
 }
 \arguments{
-\item{df}{}
+\item{df}{The data frame to impute}
 
-\item{vars_to_impute}{}
+\item{vars_to_impute}{The list of variables to perform imputation on}
 
-\item{n_quantiles}{}
+\item{n_quantiles}{The number of quantiles used to reduce memory}
 
-\item{n_samples}{}
+\item{n_samples}{Number of imputes requested}
 
-\item{return_models}{}
+\item{return_models}{Whether to return the quantiles or not}
 }
 \value{
-either the imputed df or a list of the df and the models
+If \code{return_model==T}, then this returns a list (imputed_df, models). See \link{HOSEA.srs.fit} for details.
+Otherwise, only \code{imputed_df} is returned which is either a single data frame (\code{n_samples==1})
+or a list of data frames (\code{n_samples>1}).
 }
 \description{
-Title
+Simple Random Sampling Imputation
+}
+\seealso{
+\link{HOSEA.srs.fit} \link{impute.HOSEA.srs}
 }

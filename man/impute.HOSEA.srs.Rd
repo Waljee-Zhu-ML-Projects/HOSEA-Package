@@ -2,22 +2,25 @@
 % Please edit documentation in R/srs.R
 \name{impute.HOSEA.srs}
 \alias{impute.HOSEA.srs}
-\title{Title}
+\title{Impute using Simple Random Sampling from a fitted SRS imputer}
 \usage{
 \method{impute}{HOSEA.srs}(obj, df, n_samples = 1, ...)
 }
 \arguments{
-\item{obj}{}
+\item{obj}{The SRS imputer}
 
-\item{df}{}
+\item{df}{The data frame to impute}
 
-\item{n_samples}{}
+\item{n_samples}{the number of imputes to output}
 
-\item{...}{}
+\item{...}{For compatibility with \link{impute}}
 }
 \value{
 a df or a list of dfs
 }
 \description{
-Title
+Impute using Simple Random Sampling from a fitted SRS imputer
+}
+\seealso{
+\link{HOSEA.srs} \link{HOSEA.srs.fit} \link{impute}
 }

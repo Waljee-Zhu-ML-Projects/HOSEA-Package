@@ -2,13 +2,61 @@
 % Please edit documentation in R/comparison_utils.R
 \name{kunzmann_score}
 \alias{kunzmann_score}
-\title{Title}
+\title{Computes the Kunzmann score}
 \usage{
 kunzmann_score(df)
 }
 \arguments{
-\item{df}{}
+\item{df}{A pre-processed data frame (from \link{compute_columns_for_comparison})}
+}
+\value{
+a data frame with two columns (id, Kunzmann score)
 }
 \description{
-Title
+As described in Kunzmann et al. (2018, Table 2).
+}
+\details{
+Age:
+\itemize{
+\item +0.0 for 55-
+\item +1.5 for (55,60]
+\item +2.5 for (60,65]
+\item +3.5 for 65+
+}
+
+Sex:
+\itemize{
+\item +0.0 for female
+\item +4.0 for male
+}
+
+BMI:
+\itemize{
+\item +0.0 for 25-
+\item +1.0 for (25,30]
+\item +1.5 for (30, 35]
+\item +2.5 for 35+
+}
+
+Smoking status:
+\itemize{
+\item +0.0 if Never
+\item +2.5 if Former
+\item +3.5 if Current
+}
+
+Esophageal condition (GERD/PPI/H2R):
+\itemize{
+\item +1.5 if Any
+}
+
+Note that Esophageal condition is originally described as
+"Esophageal conditions included self-reported history of gastroesophageal
+reflux disease, Barrett’s esophagus, hiatus hernia, or esophageal stricture
+and/or esophageal fundoplication or hiatus hernia surgery and/or anti-reflux
+medication use (none or any)." However, we only consider those
+that we have access to (GERD and Medication).
+}
+\references{
+Kunzmann, A. T., Thrift, A. P., Cardwell, C. R., Lagergren, J., Xie, S., Johnston, B. T., Anderson, L. A., Busby, J., McMenamin, Ú. C., Spence, A. D., & Coleman, H. G. (2018). Model for Identifying Individuals at Risk for Esophageal Adenocarcinoma. Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association, 16(8), 1229–1236.e4. \url{https://doi.org/10.1016/j.cgh.2018.03.014}
 }

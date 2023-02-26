@@ -2,13 +2,16 @@
 % Please edit documentation in R/comparison_utils.R
 \name{compute_columns_for_comparison}
 \alias{compute_columns_for_comparison}
-\title{Title}
+\title{Preprocessing of new columns for HUNT, Kunzmann and Guidlines}
 \usage{
 compute_columns_for_comparison(df)
 }
 \arguments{
-\item{df}{}
+\item{df}{The original data frame}
+}
+\value{
+a new df with just the relevant columns
 }
 \description{
-Title
+Preprocessing of new columns for HUNT, Kunzmann and Guidlines
 }

@@ -7,7 +7,8 @@
 #'
 #' @return
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr 
+#' @importFrom magrittr %<>%
 patch_outcome = function(df, master, outcome="ANY", drop=F){
   outcomes = master %>% select(.data$id, .data$casecontrol, .data$cancertype)
   outcomes %<>% mutate(
@@ -19,7 +20,7 @@ patch_outcome = function(df, master, outcome="ANY", drop=F){
   df %<>%
     left_join(outcomes_, by="id") %>%
     select(-.data$casecontrol) %>% 
-    rename(casecontrol = !!outcome)
+    rename("casecontrol" = !!outcome)
   if(drop){
     if(outcome=="EGJAC") df %<>% dplyr::filter(.data$EAC==0)
     if(outcome=="EAC") df %<>% dplyr::filter(.data$EGJAC==0)
@@ -54,8 +55,6 @@ stratified_split = function(
   proportions=c(train=2, valid=1, test=1)
 ){
   df_names = names(proportions)
-  # cases_split = sample(df_names, nrow(cases), prob=proportions, replace=T)
-  # controls_split = sample(df_names, nrow(controls), prob=proportions, replace=T)
   cases = df %>% dplyr::filter(.data$casecontrol==1)
   cases_names = sapply(df_names, function(nm) rep(nm, nrow(cases) * proportions[nm] / sum(proportions)))
   cases_split = do.call(c, cases_names)[1:nrow(cases)] %>% sample()
@@ -90,7 +89,8 @@ balanced_resample = function(df){
 #'
 #' @return
 #' @export
-#' @import xgboost dplyr
+#' @import dplyr
+#' @importFrom xgboost xgb.DMatrix
 to_xgb = function(df, vars=NULL){
   if(is.null(vars)){
     out = xgboost::xgb.DMatrix(as.matrix(df%>%select(-c(.data$id,.data$casecontrol))),

@@ -4,15 +4,16 @@
 #'
 #' @return roc curves taking all columns in ... as risk scores
 #' @export
-#' @import dplyr magrittr
+#' @import dplyr 
+#' @importFrom magrittr %<>%
 #'
 #' @examples
 roc = function(proba){
-  models = proba %>% select(-id, -y) %>% colnames()
+  models = proba %>% select(-.data$id, -.data$y) %>% colnames()
   
   out = lapply(models, function(name){
-    fg = proba %>% filter(y==1) %>% pull(name)
-    bg = proba %>% filter(y==0) %>% pull(name)
+    fg = proba %>% dplyr::filter(.data$y==1) %>% pull(name)
+    bg = proba %>% dplyr::filter(.data$y==0) %>% pull(name)
     
     roc = PRROC::roc.curve(fg, bg ,curve=TRUE)
     thin = ifelse(nrow(roc$curve) > 10000, ceiling(nrow(roc$curve)/1000), 1)
@@ -45,10 +46,10 @@ roc = function(proba){
 representative_sample = function(df, ratio_male_to_female=1.0, ratio_cases_male_to_female=8.33){
   # this function assumes we have too few female cases and controls
   
-  ids_cases_female = df%>%filter(gender==0,casecontrol==1)%>%pull(id)
-  ids_cases_male = df%>%filter(gender==1,casecontrol==1)%>%pull(id)
-  ids_controls_female = df%>%filter(gender==0,casecontrol==0)%>%pull(id)
-  ids_controls_male = df%>%filter(gender==1,casecontrol==0)%>%pull(id)
+  ids_cases_female = df%>%dplyr::filter(.data$gender==0,.data$casecontrol==1)%>%pull(.data$id)
+  ids_cases_male = df%>%dplyr::filter(.data$gender==1,.data$casecontrol==1)%>%pull(.data$id)
+  ids_controls_female = df%>%dplyr::filter(.data$gender==0,.data$casecontrol==0)%>%pull(.data$id)
+  ids_controls_male = df%>%dplyr::filter(.data$gender==1,.data$casecontrol==0)%>%pull(.data$id)
   
   n_cases_female = length(ids_cases_female)
   n_controls_female = length(ids_controls_female)
@@ -65,7 +66,7 @@ representative_sample = function(df, ratio_male_to_female=1.0, ratio_cases_male_
     ids_controls_male
   )
   
-  return(df %>% filter(id %in% ids))
+  return(df %>% dplyr::filter(.data$id %in% ids))
 }
 
 
@@ -77,14 +78,16 @@ representative_sample = function(df, ratio_male_to_female=1.0, ratio_cases_male_
 #'
 #' @return
 #' @export
+#' @importFrom stats quantile
 calibration_curve = function(proba, y, nbins=50){
-  bins = c(0., quantile(proba, seq(0., 1., length.out=nbins+1))+1e-6)
+  bins = stats::quantile(proba, seq(0., 1., length.out=nbins+1))
+  bins[1] = 0.
   L = bins[-length(bins)]; U = bins[-1]
   which_bin = cut(proba, bins)
   df = data.frame(proba=proba, bin=which_bin, y=y)
-  mid = df %>% group_by(bin) %>% summarise(mid=mean(proba))
+  mid = df %>% group_by(.data$bin) %>% summarise(mid=mean(proba))
   bindf = mid %>% bind_cols(data.frame(L=L, U=U))
-  out = df %>% group_by(bin) %>% summarize(
+  out = df %>% group_by(.data$bin) %>% summarize(
     N=n(),
     N_cases=sum(y),
     prop_cases=mean(y)
@@ -121,9 +124,9 @@ classification_metrics = function(pred, y, threshold=NULL){
     fp=colSums(predmat*(1-ymat)),
     fn=colSums(ymat*(1-predmat))
   ) %>% mutate(
-    ppv=tp/p,
-    tpr=tp/(tp+fn),
-    det_prev=p/N
+    ppv=.data$tp/.data$p,
+    tpr=.data$tp/(.data$tp+.data$fn),
+    det_prev=.data$p/.data$N
   )
   return(out)
 }
@@ -138,6 +141,7 @@ classification_metrics = function(pred, y, threshold=NULL){
 #'
 #' @return
 #' @export
+#' @importFrom stats pchisq
 hosmer_lemeshow = function(pred, obs, n, n_cases){
   nbins = length(pred)
   o1 = n_cases
@@ -145,7 +149,7 @@ hosmer_lemeshow = function(pred, obs, n, n_cases){
   e1 = pred*n
   e0 = n-e1
   H = sum(((o1-e1)^2/e1 + (o0-e0)^2/e0))
-  dof = nbins - 1
+  dof = nbins - 2
   pval = pchisq(H, dof, lower.tail=F)
   return(paste0("H=", round(H, 2), ", df=", dof, ", p=", round(pval, 3)))
 }
@@ -169,9 +173,9 @@ patch_staging = function(
                     by=c("stagegroupclinical", "clinicalt", "clinicaln", "clinicalm"))
   master %<>% mutate(
     nccn_stage_2017=ifelse(
-      (casecontrol==1) & (nccn_stage_2017==""), 
+      (.data$casecontrol==1) & (.data$nccn_stage_2017==""), 
       "missing", 
-      nccn_stage_2017
+      .data$nccn_stage_2017
     ))
   return(master)
 }
@@ -206,10 +210,10 @@ prepare_test_set = function(
   }
   if(missing_which == "incomplete"){
     complete_ids = complete_for_comparison(raw_df)
-    ids = df %>% filter(!(id %in% complete_ids)) %>% pull(id)
+    ids = df %>% dplyr::filter(!(id %in% complete_ids)) %>% pull(id)
   }
   # working df
-  imputed_wdf = df %>% filter(id %in% ids)
+  imputed_wdf = df %>% dplyr::filter(id %in% ids)
   imputed_wdf %<>% patch_outcome(master, outcome=outcome)
   # representative sample
   if(representative){
